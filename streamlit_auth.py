@@ -38,7 +38,7 @@ if authentication_status == None:
     st.warning("Please enter your username and password")
 
 if authentication_status:
-    
+
     # ---- READ CSV ----
     @st.cache
     def get_data_from_csv():
@@ -147,3 +147,8 @@ if authentication_status:
                 </style>
                 """
     st.markdown(hide_st_style, unsafe_allow_html=True)
+
+
+
+
+# based on tutorial by https://youtu.be/eCbH2nPL9sU
