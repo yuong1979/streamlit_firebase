@@ -26,10 +26,31 @@ hashed_passwords = [user["password"] for user in users]
 
 
 
+
 authenticator = stauth.Authenticate(names, usernames, hashed_passwords,
     "sales_dashboard", "abcdef", cookie_expiry_days=30)
 
+
+
+# print (dir(authenticator))
+
+# print (authenticator.check_pw, 'check_pw')
+# print (authenticator.cookie_expiry_days, 'cookie_expiry_days')
+# print (authenticator.cookie_manager, 'cookie_manager')
+# print (authenticator.cookie_name, 'cookie_name')
+# print (authenticator.exp_date, 'exp_date')
+# print (authenticator.key, 'key')
+# print (authenticator.login, 'login')
+# print (authenticator.logout, 'logout')
+# print (authenticator.passwords, 'passwords')
+# print (authenticator.token_decode, 'token_decode')
+# print (authenticator.usernames, 'usernames')
+
+
+
+
 name, authentication_status, username = authenticator.login("Login", "main")
+
 
 if authentication_status == False:
     st.error("Username/password is incorrect")
@@ -38,6 +59,8 @@ if authentication_status == None:
     st.warning("Please enter your username and password")
 
 if authentication_status:
+
+
 
     # ---- READ CSV ----
     @st.cache
