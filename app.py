@@ -6,15 +6,11 @@ from firebase_admin import auth
 import json
 from streamlit.components.v1 import html
 
-
 with open('firebase_app_config.json') as f:
     config = json.load(f)
 
 firebase = pyrebase.initialize_app(config) 
 auth = firebase. auth()
-
-
-
 
 def main():
 
