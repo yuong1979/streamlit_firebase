@@ -1,71 +1,22 @@
+from numpy import character
 import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
 import pandas as pd
-
-import database as db
-
-# emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
-st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide")
-
-
-# --- USER AUTHENTICATION ---
-# names = ["Peter Parker", "Rebecca Miller"]
-# usernames = ["pparker", "rmiller"]
-
-# # load hashed passwords
-# file_path = Path(__file__).parent / "hashed_pw.pkl"
-# with file_path.open("rb") as file:
-#     hashed_passwords = pickle.load(file)
-
-users = db.fetch_all_users()
-usernames = [user["key"] for user in users]
-names = [user["name"] for user in users]
-hashed_passwords = [user["password"] for user in users]
+import streamlit as st
 
 
 
+def sales_report():
 
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords,
-    "sales_dashboard", "abcdef", cookie_expiry_days=30)
-
-
-
-# print (dir(authenticator))
-
-# print (authenticator.check_pw, 'check_pw')
-# print (authenticator.cookie_expiry_days, 'cookie_expiry_days')
-# print (authenticator.cookie_manager, 'cookie_manager')
-# print (authenticator.cookie_name, 'cookie_name')
-# print (authenticator.exp_date, 'exp_date')
-# print (authenticator.key, 'key')
-# print (authenticator.login, 'login')
-# print (authenticator.logout, 'logout')
-# print (authenticator.passwords, 'passwords')
-# print (authenticator.token_decode, 'token_decode')
-# print (authenticator.usernames, 'usernames')
-
-
-
-
-name, authentication_status, username = authenticator.login("Login", "main")
-
-
-if authentication_status == False:
-    st.error("Username/password is incorrect")
-
-if authentication_status == None:
-    st.warning("Please enter your username and password")
-
-if authentication_status:
+    # emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
 
 
 
     # ---- READ CSV ----
     @st.cache
     def get_data_from_csv():
-        df = pd.read_csv('sales.csv')
+        df = pd.read_csv('data/sales.csv')
         # Add 'hour' column to dataframe
         df["hour"] = pd.to_datetime(df["Time"], format="%H:%M").dt.hour
         return df
@@ -73,26 +24,31 @@ if authentication_status:
     df = get_data_from_csv()
 
     # ---- SIDEBAR ----
-    authenticator.logout("Logout", "sidebar")
-    st.sidebar.title(f"Welcome {name}")
-    st.sidebar.header("Please Filter Here:")
-    city = st.sidebar.multiselect(
-        "Select the City:",
-        options=df["City"].unique(),
-        default=df["City"].unique()
+    st.header("Please Filter Here:")
+
+
+    col1, col2, col3 = st.columns([2,2,2])
+
+    with col1:
+        city = st.multiselect(
+            "Select the City:",
+            options=df["City"].unique(),
+            default=df["City"].unique()
+        )
+
+    with col2:
+        customer_type = st.multiselect(
+            "Select the Customer Type:",
+            options=df["Customer_type"].unique(),
+            default=df["Customer_type"].unique(),
     )
 
-    customer_type = st.sidebar.multiselect(
-        "Select the Customer Type:",
-        options=df["Customer_type"].unique(),
-        default=df["Customer_type"].unique(),
-    )
-
-    gender = st.sidebar.multiselect(
-        "Select the Gender:",
-        options=df["Gender"].unique(),
-        default=df["Gender"].unique()
-    )
+    with col3:
+        gender = st.multiselect(
+            "Select the Gender:",
+            options=df["Gender"].unique(),
+            default=df["Gender"].unique()
+        )
 
     df_selection = df.query(
         "City == @city & Customer_type ==@customer_type & Gender == @gender"
@@ -171,7 +127,3 @@ if authentication_status:
                 """
     st.markdown(hide_st_style, unsafe_allow_html=True)
 
-
-
-
-# based on tutorial by https://youtu.be/eCbH2nPL9sU

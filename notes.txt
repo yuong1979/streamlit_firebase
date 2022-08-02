@@ -1,0 +1,14 @@
+# radar chart
+# spider chart
+# treemap chart
+
+
+#neccessary packages
+pip install pyrebase4
+pip install firebase_admin
+pip install plotly
+pip install streamlit-option-menu
+pip install matplotlib
+
+
+pip install streamlit pyrebase4 firebase_admin plotly streamlit-option-menu matplotlib
