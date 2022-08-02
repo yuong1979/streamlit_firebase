@@ -10,7 +10,7 @@ from scatterplot import scatterplot_report
 from bar_chart import bar_report
 
 
-with open('secret/firebase_app_config.json') as f:
+with open('firebase_app_config.json') as f:
     config = json.load(f)
 
 firebase = pyrebase.initialize_app(config) 

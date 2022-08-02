@@ -24,7 +24,7 @@
 
 **Create a firebase app config key to connect to firebase auth**
 
-**Insert both json files in the streamlit_firebase directory**
+**Insert both json files in the streamlit_firebase/secret directory**
 
 ### Deploy on local without docker
 
@@ -60,11 +60,11 @@ Comment out the development code on Dockerfile
 
 **Build image**
 
-`gcloud builds submit --tag gcr.io/test-python-api-spreadsheets/flaskapp`
+`gcloud builds submit --tag gcr.io/test-python-api-spreadsheets/finance_app`
 
 **Deploy image**
 
-`gcloud run deploy --image gcr.io/test-python-api-spreadsheets/flaskapp`
+`gcloud run deploy --image gcr.io/test-python-api-spreadsheets/finance_app`
 
 
 

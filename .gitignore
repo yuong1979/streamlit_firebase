@@ -1,4 +1,6 @@
 secret/
+firebase_app_config.json
+serviceAccountKey.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
