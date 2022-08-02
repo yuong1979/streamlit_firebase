@@ -1,12 +1,12 @@
-# Sample flask project with docker and GCP deployment ready 
+# Sample streamlit project with docker and GCP deployment ready 
 
 **Clone project**
 
-`git clone https://github.com/yuong1979/flask.git`
+`git clone https://github.com/yuong1979/streamlit_firebase.git`
 
 **Change directory into the project**
 
-`cd flaskproj`
+`cd streamlit_firebase`
 
 **Start a the virtual environment**
 
@@ -16,9 +16,15 @@
 
 `source venv/bin/activate`
 
-**Run the virtual environment**
+**Install the requirements**
 
 `pip install -r requirements.txt`
+
+**Create a serviceaccountkey to connect to firestore**
+
+**Create a firebase app config key to connect to firebase auth**
+
+**Insert both json files in the streamlit_firebase directory**
 
 ### Deploy on local without docker
 
