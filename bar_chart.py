@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.express as px
 from PIL import Image
 
-db = firestore.Client.from_service_account_json("serviceAccountKey.json")
+db = firestore.Client.from_service_account_json("secret/serviceAccountKey.json")
 
 
 def bar_report():

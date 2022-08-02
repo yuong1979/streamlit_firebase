@@ -1,6 +1,4 @@
-googlesheetsapi-keys.json
-serviceAccountKey.json
-firebase_app_config.json
+secret/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
