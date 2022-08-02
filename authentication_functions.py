@@ -2,9 +2,17 @@ import streamlit as st
 import requests
 from firebase_admin import auth
 import json
-from streamlit.components.v1 import html
+# from streamlit.components.v1 import html
+import pyrebase
+import requests
 
 
+
+with open('firebase_app_config.json') as f:
+    config = json.load(f)
+
+firebase = pyrebase.initialize_app(config) 
+auth = firebase.auth()
 
 def log_in():
     email = st.session_state.login_email
@@ -31,6 +39,8 @@ def log_in():
 
     except Exception as e:
         st.error(e)
+
+
 
 
 

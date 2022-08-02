@@ -2,22 +2,22 @@ import streamlit as st
 import pyrebase
 from firebase_admin import auth
 import json
-from streamlit.components.v1 import html
-from authentication_functions import log_in, log_out, sign_up, reset_user_password, status
+# from streamlit.components.v1 import html
+from authentication_functions import log_in, sign_up, log_out, reset_user_password, status
 from streamlit_option_menu import option_menu
 from sales_dashboard import sales_report
 from sankey_dashboard import sankey_report
 from scatterplot import scatterplot_report
 from bar_chart import bar_report
 
+
 with open('firebase_app_config.json') as f:
     config = json.load(f)
 
 firebase = pyrebase.initialize_app(config) 
-auth = firebase. auth()
+auth = firebase.auth()
 
 def main():
-
     st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide") #layout can be centered
 
     # st.title("streamlit forms")

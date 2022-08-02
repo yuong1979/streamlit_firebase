@@ -1,5 +1,3 @@
-from argparse import _StoreFalseAction
-from firebase_admin import credentials
 from firebase_admin import firestore
 import pandas as pd
 import streamlit as st
