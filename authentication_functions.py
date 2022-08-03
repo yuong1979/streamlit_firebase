@@ -8,7 +8,7 @@ import requests
 
 
 
-with open('firebase_app_config.json') as f:
+with open('secret/firebase_app_config.json') as f:
     config = json.load(f)
 
 firebase = pyrebase.initialize_app(config) 
