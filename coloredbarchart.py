@@ -57,8 +57,8 @@ def coloredbarchart():
 
     # -- DOWNLOAD SECTION
     st.subheader('Downloads:')
-    generate_excel_download_link(df_grouped)
-    generate_html_download_link(fig)
+    # generate_excel_download_link(df_grouped)
+    # generate_html_download_link(fig)
 
 
     # tutorial is from https://youtu.be/ZDffoP6gjxc?list=PL7QI8ORyVSCaejt2LICRQtOTwmPiwKO2n
