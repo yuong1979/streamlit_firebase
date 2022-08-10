@@ -12,7 +12,7 @@ from coloredbarchart import coloredbarchart
 
 with open('secret/firebase_app_config.json') as f:
     config = json.load(f)
-
+print("test")
 firebase = pyrebase.initialize_app(config) 
 auth = firebase.auth()
 
