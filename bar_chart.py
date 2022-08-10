@@ -3,9 +3,16 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 from PIL import Image
+from google.oauth2 import service_account
+import json
+from google.cloud.firestore import Client
+from secret import access_secret
 
-db = firestore.Client.from_service_account_json("secret/serviceAccountKey.json")
 
+firestore_api_key = access_secret("firestore_api_key")
+firestore_api_key_dict = json.loads(firestore_api_key)
+fbcredentials = service_account.Credentials.from_service_account_info(firestore_api_key_dict)
+db = Client("python-firestore-52cfc", fbcredentials)
 
 def bar_report():
 

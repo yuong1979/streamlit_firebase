@@ -5,13 +5,14 @@ import json
 # from streamlit.components.v1 import html
 import pyrebase
 import requests
+from secret import access_secret
+import json
 
 
+firebase_auth_api_key = access_secret("firebase_auth_api_key")
+firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
 
-with open('secret/firebase_app_config.json') as f:
-    config = json.load(f)
-
-firebase = pyrebase.initialize_app(config) 
+firebase = pyrebase.initialize_app(firebase_auth_api_key_dict) 
 auth = firebase.auth()
 
 def log_in():

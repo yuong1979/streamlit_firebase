@@ -9,11 +9,13 @@ from sankey_dashboard import sankey_report
 from scatterplot import scatterplot_report
 from bar_chart import bar_report
 from coloredbarchart import coloredbarchart
+from secret import access_secret
+import json
 
-with open('secret/firebase_app_config.json') as f:
-    config = json.load(f)
-print("test")
-firebase = pyrebase.initialize_app(config) 
+firebase_auth_api_key = access_secret("firebase_auth_api_key")
+firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
+
+firebase = pyrebase.initialize_app(firebase_auth_api_key_dict) 
 auth = firebase.auth()
 
 def main():
