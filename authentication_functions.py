@@ -9,7 +9,7 @@ from secret import access_secret
 import json
 
 
-firebase_auth_api_key = access_secret("firebase_auth_api_key")
+firebase_auth_api_key = access_secret("blockmacro_firebase_auth")
 firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
 
 firebase = pyrebase.initialize_app(firebase_auth_api_key_dict) 
