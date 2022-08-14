@@ -13,6 +13,3 @@ pip install matplotlib
 
 pip install streamlit pyrebase4 firebase_admin plotly streamlit-option-menu matplotlib
 
-
-########### RUN THIS BEFORE RUNNING APP ON LOCAL ################
-# export GOOGLE_APPLICATION_CREDENTIALS="/home/yuong/work/pyproj/Keys/blockmacro_local_access.json"

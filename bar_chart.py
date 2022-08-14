@@ -7,12 +7,13 @@ from google.oauth2 import service_account
 import json
 from google.cloud.firestore import Client
 from secret import access_secret
+from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
 
 
-firestore_api_key = access_secret("blockmacro_firebase_db")
+firestore_api_key = access_secret(firestore_api_key, project_id)
 firestore_api_key_dict = json.loads(firestore_api_key)
 fbcredentials = service_account.Credentials.from_service_account_info(firestore_api_key_dict)
-db = Client("python-firestore-52cfc", fbcredentials)
+db = Client(firebase_database, fbcredentials)
 
 def bar_report():
 

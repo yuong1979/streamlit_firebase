@@ -7,9 +7,11 @@ import pyrebase
 import requests
 from secret import access_secret
 import json
+from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
 
 
-firebase_auth_api_key = access_secret("blockmacro_firebase_auth")
+
+firebase_auth_api_key = access_secret(firebase_auth_api_key, project_id)
 firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
 
 firebase = pyrebase.initialize_app(firebase_auth_api_key_dict) 

@@ -1,8 +1,6 @@
 from google.cloud import secretmanager
 
-project_id = "test-python-api-spreadsheets"
-
-def access_secret(secret_id, version_id="latest"):
+def access_secret(secret_id, project_id, version_id="latest"):
     # Create the Secret Manager client.
     client = secretmanager.SecretManagerServiceClient()
     # Build the resource name of the secret version.
