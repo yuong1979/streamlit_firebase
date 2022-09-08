@@ -74,7 +74,8 @@ def radar_chart():
         median_list.append(item)
 
 
-    #remove the radius ticker
+    ### Add both values_list and rank_d_maxrank_list to hover text below
+    ### Add both values_list as a label to the chart also
 
     fig = go.Figure()
 
@@ -92,11 +93,11 @@ def radar_chart():
         hoverinfo = 'name', 
     ))
 
-    fig.add_trace(go.Scatterpolar(
-        r = median_list,
-        theta = cols,
-        fill = 'toself',
-    ))
+    # fig.add_trace(go.Scatterpolar(
+    #     r = median_list,
+    #     theta = cols,
+    #     fill = 'toself',
+    # ))
 
     fig.update_layout(
     polar=dict(
