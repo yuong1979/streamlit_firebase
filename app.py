@@ -12,6 +12,8 @@ from coloredbarchart import coloredbarchart
 from secret import access_secret
 import json
 from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
+from test import ratios_by_industry, ratios_per_industry, ratios_by_industry_bubblechart
+
 
 
 firebase_auth_api_key = access_secret(firebase_auth_api_key, project_id)
@@ -33,7 +35,11 @@ def main():
                 "Chart2", 
                 "Chart3",
                 "Chart4",
-                "Chart5"
+                "Chart5",
+                "Chart6",
+                "Chart7",
+                "Chart8",
+                "Chart9"
                 ],  # required
             icons=["house", "book", "envelope"],  # optional
             menu_icon="cast",  # optional
@@ -114,6 +120,26 @@ def main():
     if selected == "Chart5":
         st.title(f"You have selected {selected}")
         coloredbarchart()
+        status()
+
+    if selected == "Chart6":
+        st.title(f"You have selected {selected}")
+        ratios_by_industry()
+        status()
+
+    if selected == "Chart7":
+        st.title(f"You have selected {selected}")
+        ratios_per_industry()
+        status()
+
+    if selected == "Chart8":
+        st.title(f"You have selected {selected}")
+        ratios_per_industry_radar()
+        status()
+
+    if selected == "Chart9":
+        st.title(f"You have selected {selected}")
+        ratios_by_industry_bubblechart()
         status()
 
 
