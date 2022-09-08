@@ -29,11 +29,21 @@ def radar_chart():
     selected_ind = 'Credit Services'
 
     #collecting the median and max values for comparison
-    max_rank_dict = {}
-    rank_dict = {}
-    medianrank = {}
-    abs_value_dict = {}
-    rank_d_maxrank_dict = {}
+    value_abs = {}
+    value_max = {}
+    value_min = {}
+    value_median = {}
+    adj_value = {} #adj value for ratios that are negative in nature - debt/equity
+    adj_range = {} #adj value for max range to include negative values
+
+
+    rank_max = {}
+    rank_val = {}
+    rank_median = {}
+    rank_fraction = {}
+
+    rank_df = {}
+
     for i in cols:
         dfnew = df[[i]]
 
@@ -41,42 +51,71 @@ def radar_chart():
         dfnew = dfnew.dropna(subset=[i])
         dfnew[i] = dfnew[i].astype(float)
 
-        value = dfnew[i][[selected_ind]].values[0] 
-        abs_value_dict[i] = value
+        value_abs[i] = dfnew[i][[selected_ind]].values[0] 
+
+
+        value_max[i] = dfnew[i].max()
+        value_min[i] = dfnew[i].min()
+        value_median[i] = dfnew[i].median()
 
         # if the kpi ratio is negative = good, than reverse the order to rank it - debt/equity
         if kpi_mapping[i] == True:
-            dfnew[i] = dfnew[i].rank(ascending=True)
+
+            adj_range[i] = value_max[i] - value_min[i]
+            adj_value[i] = value_abs[i] - value_min[i]
+
+            rank_df[i] = dfnew[i].rank(ascending=True)
+
         else:
-            dfnew[i] = dfnew[i].rank(ascending=False)
 
-        medianrank[i] = round(dfnew[i].count()/2)
-        max_rank_dict[i] = dfnew[i].count()
-        rank_dict[i] = (dfnew[i][[selected_ind]].values)[0]
-        rank_d_maxrank_dict[i] = str(int(rank_dict[i])) + "/" + str(int(max_rank_dict[i]))
+            adj_range[i] = value_max[i] - value_min[i]
+            #to get the value(which is reversed), we need to take the maximum range and minus the difference between min(which is best) and the value
+            adj_value[i] = adj_range[i] - (value_abs[i] - value_min[i])
 
+            rank_df[i] = dfnew[i].rank(ascending=False)
+
+        rank_median[i] = round(rank_df[i].count()/2)
+        rank_max[i] = rank_df[i].count()
+        rank_val[i] = (rank_df[i][[selected_ind]].values)[0]
+        rank_fraction[i] = str(int(rank_val[i])) + "/" + str(int(rank_max[i]))
+
+        # print (' ')
+        # print (i)
+        # print ("value_abs", value_abs[i])
+
+        # print ("value_max - nr", value_max[i])
+        # print ("value_min - nr", value_min[i])
+        # print ("value_median" , value_median[i])
+        # print ("adj_value" , adj_value[i])
+        # print ("adj_range" , adj_range[i])
+
+        # print ('-')
+
+        # print ("rank_val" , rank_val[i])
+        # print ("rank_median" , rank_median[i])
+        # print ("rank_fraction" , rank_fraction[i])
+        # print ("rank_max" , rank_max[i])
 
     #normalizing the numbers for insertion into chart
-
-    rank_list = list(rank_dict.values())
-    values_list = list(abs_value_dict.values())
-    rank_d_maxrank_list = list(rank_d_maxrank_dict.values()) 
+    rank_list = list(rank_val.values())
+    values_list = list(value_abs.values())
+    rank_d_maxrank_list = list(rank_fraction.values()) 
     main_list = []
     median_list = []
-    for i, value in enumerate(max_rank_dict):
+    for i, value in enumerate(rank_max):
 
-        item = rank_list[i] / max_rank_dict[value]
+        item = rank_list[i] / rank_max[value]
         item = round(item, 3)
         main_list.append(item)
 
-        item = medianrank[value] / max_rank_dict[value]
+        item = rank_median[value] / rank_max[value]
         item = round(item, 3)
         median_list.append(item)
 
 
+
     ### Add both values_list and rank_d_maxrank_list to hover text below
     ### Add both values_list as a label to the chart also
-
     fig = go.Figure()
 
     fig.add_trace(go.Scatterpolar(
