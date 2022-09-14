@@ -1,22 +1,20 @@
 import pandas as pd
-import numpy as np
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove
-
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
-
-
+import numpy as np
 
 # #################################################################################################
 # ####### Spider chart ratios of individual industries ###############################################
 # #################################################################################################
-# python -c 'from samples import radar_chart; radar_chart()'
+# python -c 'from test import ratios_ranked_per_industry_radar; ratios_ranked_per_industry_radar()'
 
-def radar_chart():
+def Industry_Explore_Ratios_Rankings():
+    
+    df = extract_csv('dataframe_csv/industry_data.csv')
 
-    df = pd.read_csv('dataframe_csv/industry_data.csv', index_col=1)
-    df = df.drop("Unnamed: 0", axis='columns')
+    last_recorded_datetime = df['daily_agg_record_time'].min().split('.')[0]
 
     cols = df.columns.values.tolist()
 
@@ -26,7 +24,47 @@ def radar_chart():
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
 
-    selected_ind = 'Credit Services'
+
+    ind_list = df.index.values.tolist()
+
+    Default_cols = cols[:len(cols)-10]
+
+    # st.write('\n')
+    # st.markdown('---')
+
+    #retrieving the selected industry from sessions
+    if 'selected_ind' in st.session_state:
+        sel_ind = st.session_state['selected_ind']
+        index_no = ind_list.index(sel_ind)
+    else:
+        index_no = 0
+
+    col1, col2 = st.columns([1,2])
+
+
+    with col1:
+        selected_ind = st.selectbox(
+            'Select an industry',
+            tuple(ind_list),
+            index=index_no,
+            key = "ind_IndustryExploreRatiosRankings",
+        )
+
+
+    with col2:
+        selected_kpi = st.multiselect(
+            "Select a ratio:",
+            options = cols,
+            default = cols
+        )
+
+    #recording the selected industry from sessions
+    st.session_state['selected_ind'] = selected_ind
+
+    # if len(selected_kpi) >= 15:
+    #     st.error('User may only choose a maximum of 14 ratios')
+    #     st.stop()
+
 
     #collecting the median and max values for comparison
     value_abs = {}
@@ -44,16 +82,9 @@ def radar_chart():
 
     rank_df = {}
 
-    for i in cols:
+    for i in selected_kpi:
         dfnew = df[[i]]
-
-        dfnew = dfnew.replace('', np.nan)
-        dfnew = dfnew.dropna(subset=[i])
-        dfnew[i] = dfnew[i].astype(float)
-
         value_abs[i] = dfnew[i][[selected_ind]].values[0] 
-
-
         value_max[i] = dfnew[i].max()
         value_min[i] = dfnew[i].min()
         value_median[i] = dfnew[i].median()
@@ -63,21 +94,23 @@ def radar_chart():
 
             adj_range[i] = value_max[i] - value_min[i]
             adj_value[i] = value_abs[i] - value_min[i]
-
-            rank_df[i] = dfnew[i].rank(ascending=True)
+            rank_df[i] = dfnew[i].rank(ascending=False)
 
         else:
 
             adj_range[i] = value_max[i] - value_min[i]
             #to get the value(which is reversed), we need to take the maximum range and minus the difference between min(which is best) and the value
             adj_value[i] = adj_range[i] - (value_abs[i] - value_min[i])
-
-            rank_df[i] = dfnew[i].rank(ascending=False)
+            rank_df[i] = dfnew[i].rank(ascending=True)
 
         rank_median[i] = round(rank_df[i].count()/2)
         rank_max[i] = rank_df[i].count()
         rank_val[i] = (rank_df[i][[selected_ind]].values)[0]
-        rank_fraction[i] = str(int(rank_val[i])) + "/" + str(int(rank_max[i]))
+
+        try:
+            rank_fraction[i] = str(int(rank_val[i])) + "/" + str(int(rank_max[i]))
+        except:
+            rank_fraction[i] = 0
 
         # print (' ')
         # print (i)
@@ -99,47 +132,51 @@ def radar_chart():
     #normalizing the numbers for insertion into chart
     rank_list = list(rank_val.values())
     values_list = list(value_abs.values())
-    rank_d_maxrank_list = list(rank_fraction.values()) 
+    rank_fraction_list = list(rank_fraction.values()) 
     main_list = []
-    median_list = []
+    median_rank_list = []
     for i, value in enumerate(rank_max):
-
-        item = rank_list[i] / rank_max[value]
+        #ranking ranks 0 to 1 so those with lower ranks should have higher scores therefore 1 -rank/maxrank is neccessary
+        item = 1 - (rank_list[i] / rank_max[value])
         item = round(item, 3)
         main_list.append(item)
 
-        item = rank_median[value] / rank_max[value]
+        item = 1 - (rank_median[value] / rank_max[value])
         item = round(item, 3)
-        median_list.append(item)
+        median_rank_list.append(item)
 
 
 
+    # print (rank_list, "rank_list")
+    # print (values_list, "values_list")
+    # print (main_list, "main_list")
+    # print (rank_fraction_list, "rank_fraction_list")
+    # print (median_rank_list, "median_rank_list")
+    # print (cols, "cols")
 
-
-    ### Add both values_list and rank_d_maxrank_list to hover text below
-    ### Add both values_list as a label to the chart also
     fig = go.Figure()
 
     fig.add_trace(go.Scatterpolar(
         r = main_list,
-        theta = cols,
+        theta = selected_kpi,
         fill = 'toself',
         # showlegend=True,
         fillcolor = 'green',
         line_shape = 'spline', #linear
-        text = values_list, #AT
+        text = values_list, 
         opacity=0.6,
-        mode = 'markers+text', #AT
-        textfont_color='red', #AT
-        # textposition='bottom center', #AT
-        marker_color='green'#AT
+        mode = 'markers+text', 
+        textfont_color='red', 
+        # textposition='bottom center',
+        marker_color='green',
+
     ))
 
-    # fig.add_trace(go.Scatterpolar(
-    #     r = median_list,
-    #     theta = cols,
-    #     fill = 'toself',
-    # ))
+    fig.add_trace(go.Scatterpolar(
+        r = median_rank_list,
+        theta = selected_kpi,
+        # fill = 'toself',
+    ))
 
     fig.update_layout(
     polar=dict(
@@ -147,13 +184,21 @@ def radar_chart():
         visible=False,
         range=[0, 1]
         )),
-    showlegend=False
+        showlegend=False
+    )
+
+    fig.update_layout(
+        autosize=False,
+        # width=800,
+        # margin=dict(l=20, r=20, t=100, b=100),
+        height=800,
     )
     
-    hovertemplate = ('Ranking: %{customdata[0]}<br>' + 'Value: %{customdata[1]}<br><extra></extra>') #AT
-    customdata = np.stack((rank_d_maxrank_list, values_list), axis=-1) #AT
-    fig.update_traces(customdata=customdata,hovertemplate=hovertemplate) #AT
+    hovertemplate = ('Ratio: %{customdata[0]}<br>' + 'Ranking: %{customdata[1]}<br>' + 'Value: %{customdata[2]}<br><extra></extra>')
+    customdata = np.stack((selected_kpi, rank_fraction_list, values_list), axis=-1)
+    fig.update_traces(customdata=customdata,hovertemplate=hovertemplate)
 
-    fig.show()
-   
 
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.caption("Last updated :" + str(last_recorded_datetime))

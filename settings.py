@@ -24,3 +24,16 @@ else:
     schedule_function_key = "blockmacro_schedule_function_key"
     firebase_auth_api_key = "blockmacro_firebase_auth"
     email_password = "blockmacro_email_password"
+
+
+
+## streamlit theme secondary color - copy this to .streamlit/config.toml to change the theme color
+# [theme]
+# base="light"
+# backgroundColor="#dcdbdb"
+# secondaryBackgroundColor="#f0f4f7"
+
+## streamlit theme -dark - copy this to .streamlit/config.toml to change the theme color
+# [theme]
+# base="dark"
+

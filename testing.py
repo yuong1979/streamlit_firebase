@@ -11,10 +11,15 @@ import plotly.graph_objects as go
 # #################################################################################################
 # ####### Spider chart ratios of individual industries ###############################################
 # #################################################################################################
-# python -c 'from samples import radar_chart; radar_chart()'
+# python -c 'from testing import radar_chart; radar_chart()'
+
+
+import plotly.express as px
+
 
 def radar_chart():
 
+    
     df = pd.read_csv('dataframe_csv/industry_data.csv', index_col=1)
     df = df.drop("Unnamed: 0", axis='columns')
 
@@ -26,7 +31,37 @@ def radar_chart():
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
 
-    selected_ind = 'Credit Services'
+
+    cols_profit_growth = ['grossMargins', 'operatingMargins', 'ebitdaMargins', 'profitMargins', 'earningsGrowth', 'revenueGrowth']
+
+    cols_value = ['forwardEps', 'trailingEps', 'forwardPE', 'trailingPE', 'pegRatio', 'trailingPegRatio', 'enterpriseToEbitda', 'enterpriseToRevenue']
+
+    cols_popularity = ['heldPercentInstitutions', 'heldPercentInsiders']
+
+    cols_financialhealth = ['debtToEquity', 'quickRatio', 'currentRatio']
+
+    cols_financialhealth = ['dividendYield', 'dividendRate', 'trailingAnnualDividendRate', 'fiveYearAvgDividendYield', 'trailingAnnualDividendYield']
+
+
+    ind_list = df.index.values.tolist()
+
+    Default_cols = cols[:len(cols)-10]
+
+    selected_ind = 'Uranium'
+    # selected_ind = 'Steel'
+
+    # Steel
+    # Steel & Iron
+    # Telecom Services
+    # Telecom Services - Foreign
+    # Textile Manufacturing
+    # Thermal Coal
+    # Tobacco
+    # Tools & Accessories
+    # Travel Services
+    # Trucking
+    # Uranium
+
 
     #collecting the median and max values for comparison
     value_abs = {}
@@ -35,7 +70,6 @@ def radar_chart():
     value_median = {}
     adj_value = {} #adj value for ratios that are negative in nature - debt/equity
     adj_range = {} #adj value for max range to include negative values
-
 
     rank_max = {}
     rank_val = {}
@@ -46,14 +80,7 @@ def radar_chart():
 
     for i in cols:
         dfnew = df[[i]]
-
-        dfnew = dfnew.replace('', np.nan)
-        dfnew = dfnew.dropna(subset=[i])
-        dfnew[i] = dfnew[i].astype(float)
-
         value_abs[i] = dfnew[i][[selected_ind]].values[0] 
-
-
         value_max[i] = dfnew[i].max()
         value_min[i] = dfnew[i].min()
         value_median[i] = dfnew[i].median()
@@ -77,24 +104,10 @@ def radar_chart():
         rank_median[i] = round(rank_df[i].count()/2)
         rank_max[i] = rank_df[i].count()
         rank_val[i] = (rank_df[i][[selected_ind]].values)[0]
-        rank_fraction[i] = str(int(rank_val[i])) + "/" + str(int(rank_max[i]))
-
-        # print (' ')
-        # print (i)
-        # print ("value_abs", value_abs[i])
-
-        # print ("value_max - nr", value_max[i])
-        # print ("value_min - nr", value_min[i])
-        # print ("value_median" , value_median[i])
-        # print ("adj_value" , adj_value[i])
-        # print ("adj_range" , adj_range[i])
-
-        # print ('-')
-
-        # print ("rank_val" , rank_val[i])
-        # print ("rank_median" , rank_median[i])
-        # print ("rank_fraction" , rank_fraction[i])
-        # print ("rank_max" , rank_max[i])
+        try:
+            rank_fraction[i] = str(int(rank_val[i])) + "/" + str(int(rank_max[i]))
+        except:
+            rank_fraction[i] = ""
 
     #normalizing the numbers for insertion into chart
     rank_list = list(rank_val.values())
@@ -112,34 +125,32 @@ def radar_chart():
         item = round(item, 3)
         median_list.append(item)
 
+    print (cols)
+    print (main_list)
+    print (value_abs)
+    print (rank_val)
+    print (rank_fraction)
+    print (value_median)
 
 
 
 
-    ### Add both values_list and rank_d_maxrank_list to hover text below
-    ### Add both values_list as a label to the chart also
+
+
     fig = go.Figure()
 
     fig.add_trace(go.Scatterpolar(
         r = main_list,
         theta = cols,
         fill = 'toself',
-        # showlegend=True,
         fillcolor = 'green',
-        line_shape = 'spline', #linear
-        text = values_list, #AT
+        line_shape = 'spline', #linear #spline
+        text = values_list, 
         opacity=0.6,
-        mode = 'markers+text', #AT
-        textfont_color='red', #AT
-        # textposition='bottom center', #AT
-        marker_color='green'#AT
+        mode = 'markers+text', 
+        textfont_color='red', 
+        marker_color='green',
     ))
-
-    # fig.add_trace(go.Scatterpolar(
-    #     r = median_list,
-    #     theta = cols,
-    #     fill = 'toself',
-    # ))
 
     fig.update_layout(
     polar=dict(
@@ -147,6 +158,8 @@ def radar_chart():
         visible=False,
         range=[0, 1]
         )),
+    autosize=False,
+    height=800,
     showlegend=False
     )
     
@@ -154,6 +167,7 @@ def radar_chart():
     customdata = np.stack((rank_d_maxrank_list, values_list), axis=-1) #AT
     fig.update_traces(customdata=customdata,hovertemplate=hovertemplate) #AT
 
-    fig.show()
-   
 
+    # # st.plotly_chart(fig, use_container_width=True)
+
+    fig.show()

@@ -24,3 +24,25 @@ input[type=text], input[type=email], textarea {
   button[type=submit]:hover {
     background-color: #45a049;
   }
+
+
+/* change metric box color on dashboard */
+div.css-12w0qpk.e1tzin5v2 {
+    background-color: #EEEEEE;
+    border: 2px none #CCCCCC;
+    padding: 1% 1% 1% 1%;
+    border-radius: 5px;
+}
+
+/* background-color: #EEEEEE; */
+
+
+/* tried changing the size of the kpi, but failed, css only allows changing of the entire thing */
+/* change caption color on dashboard */
+div.css-bda956.e16nr0p33 {
+    color: black;
+    font-size: 13px;
+    /* text-align: center; */
+}
+
+

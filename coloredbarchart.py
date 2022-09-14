@@ -5,7 +5,7 @@ import base64  # Standard Python Module
 from io import StringIO, BytesIO  # Standard Python Module
 
 
-def coloredbarchart():
+def colored_bar_chart():
 
     def generate_excel_download_link(df):
         # Credit Excel: https://discuss.streamlit.io/t/how-to-add-a-download-excel-csv-function-to-a-button/4474/5

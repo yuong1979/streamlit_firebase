@@ -1,146 +1,129 @@
 import streamlit as st
-import pyrebase
+
 from firebase_admin import auth
-import json
-from authentication_functions import log_in, sign_up, log_out, reset_user_password, status
 from streamlit_option_menu import option_menu
 from sales_dashboard import sales_report
 from sankey_dashboard import sankey_report
 from scatterplot import scatterplot_report
 from bar_chart import bar_report
-from coloredbarchart import coloredbarchart
-from secret import access_secret
-import json
+from coloredbarchart import colored_bar_chart
 from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
-from test import ratios_by_industry, ratios_per_industry, ratios_by_industry_bubblechart
+
+from charts.IndustryExploreRatiosDetails import Industry_Explore_Ratios_Details
+from charts.IndustryExploreRatiosDashboard import Industry_Explore_Ratios_Dashboard
+from charts.IndustryExploreRatiosColorRanked import Industry_Explore_Ratios_Color_Ranked
+from charts.IndustryExploreRatiosMarketSize import Industry_Explore_Ratios_Market_Size
+from charts.IndustryExploreRatiosRankings import Industry_Explore_Ratios_Rankings
+
+from tools import updating_industry_csv
+from authentication_functions import home, status
 
 
-
-firebase_auth_api_key = access_secret(firebase_auth_api_key, project_id)
-firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
-
-firebase = pyrebase.initialize_app(firebase_auth_api_key_dict) 
-auth = firebase.auth()
 
 def main():
-    st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide") #layout can be centered
+    st.set_page_config(page_title="Financial Assets Explorer", page_icon=":chart_with_upwards_trend:", layout="wide") #layout can be centered
 
-    # st.title("streamlit forms")
+    #refreshing the data if its not refreshing
+    updating_industry_csv()
+
+    #remove streamlit logo and menu
+    hide_st_style = """
+                <style>
+                #MainMenu {visibility: hidden;}
+                footer {visibility: hidden;}
+                header {visibility: hidden;}
+                </style>
+                """
+    st.markdown(hide_st_style, unsafe_allow_html=True)
+
+    # # # insert testing charts/data here
+    # Industry_Explore_Ratios_Dashboard()
+
+    ind_chart_list = ['Explore Ratios Market Size', 'Explore Ratios Rankings', 'Explore Ratios Color Ranked', 'Explore Ratios Details', 'Explore Ratios Dashboard']
+    equity_chart_list = ['colored_bar_chart', 'bar_report', 'scatterplot_report', 'sankey_report', 'sales_report']
+
+
+    if 'page' not in st.session_state:
+        st.session_state['page'] = 'Home'
+
+    def gohome():
+        st.session_state['page'] = 'Home'
+
+    def industry():
+        st.session_state['page'] = 'Industry'
+
+    def equities():
+        st.session_state['page'] = 'Equities'
 
     with st.sidebar:
-        selected = option_menu(
-            menu_title="Main Menu",  # required
-            options=["Home", 
-                "Chart1", 
-                "Chart2", 
-                "Chart3",
-                "Chart4",
-                "Chart5",
-                "Chart6",
-                "Chart7",
-                "Chart8",
-                "Chart9"
-                ],  # required
-            icons=["house", "book", "envelope"],  # optional
-            menu_icon="cast",  # optional
-            default_index=0,  # optional - what option is selected by default first
-        )
 
-    if selected == "Home":
-        st.title(f"You have selected {selected}")
+        # st.button(label, key=None, help=None, on_click=None, args=None, kwargs=None, *, disabled=False)
 
-        "st.session_state object:", st.session_state
-
-        #checking if user token is in session, if not user is not authenticated
-        if 'user' in st.session_state.keys():
-            user = st.session_state['user']
-            userinfo = auth.get_account_info(user['idToken'])
-            #checking if user has email verified, if not user is not authenticated
-            if userinfo['users'][0]['emailVerified'] == False:
-                st.session_state['authenticated'] = False
-            else:    
-                st.session_state['authenticated'] = True
-        else:
-            st.session_state['authenticated'] = False
+        Home = st.button(label="Home", key="Home", on_click=gohome)
 
 
-        if st.session_state['authenticated'] == False:
-
-            buffer, col2, buffer = st.columns([2,4,2])
-
-            with col2:
-
-                a = st.radio("", ['Login', 'Signup', 'Reset Email'], 0, horizontal=True)
-                if a == 'Login':
-                    st.subheader("Log In")
-                    with st.form(key="SignInForm", clear_on_submit=True):
-                        email = st.text_input("Enter your Email", key="login_email")
-                        password = st.text_input("Enter a password", type="password", key="login_password")
-                        submit_button = st.form_submit_button(label="Log in", on_click=log_in)
-
-                elif a == 'Signup':
-                    st.subheader("Sign Up")
-                    with st.form(key="SignUpForm", clear_on_submit=True):
-                        email = st.text_input("Enter your Email", key="signup_email")
-                        password = st.text_input("Enter a password", type="password", key="signup_password")
-                        submit_button = st.form_submit_button(label="Sign up", on_click=sign_up)
-                else:
-                    st.subheader("Reset Email")
-                    with st.form(key="ResetEmail", clear_on_submit=True):
-                        email = st.text_input("Enter your Email", key="reset_email_password")
-                        submit_button = st.form_submit_button(label="Reset", on_click=reset_user_password)
-
-        else:
-            submit_button = st.button(label="Logout", on_click=log_out)
-
-            status()
+        with st.expander("Industry Explorers"):
+            options = st.radio('Select display:', ind_chart_list, key="ind_chart", horizontal=False, on_change=industry )
 
 
+        with st.expander("Equities Explorers"):
+            options1 = st.radio('Select display:', equity_chart_list, key="equity_chart", horizontal=False, on_change=equities )
 
-    if selected == "Chart1":
-        st.title(f"You have selected {selected}")
-        sales_report()
-        status()
+    # st.write(st.session_state['page'])
 
-    if selected == "Chart2":
-        st.title(f"You have selected {selected}")
-        sankey_report()
-        status()
+    if st.session_state['page'] == 'Home':
+        home()
 
-    if selected == "Chart3":
-        st.title(f"You have selected {selected}")
-        scatterplot_report()
-        status()
 
-    if selected == "Chart4":
-        st.title(f"You have selected {selected}")
-        bar_report()
-        status()
+    
+    if st.session_state['page'] == 'Industry':
+        ### uncomment status to activate login only access
+        # status()
+        if options == 'Explore Ratios Market Size':
 
-    if selected == "Chart5":
-        st.title(f"You have selected {selected}")
-        coloredbarchart()
-        status()
+            st.title('Industry Financials Explorer')
+            st.subheader('Explore Ratios Market Size')
 
-    if selected == "Chart6":
-        st.title(f"You have selected {selected}")
-        ratios_by_industry()
-        status()
+            Industry_Explore_Ratios_Market_Size()
+        elif options == 'Explore Ratios Rankings':
 
-    if selected == "Chart7":
-        st.title(f"You have selected {selected}")
-        ratios_per_industry()
-        status()
+            st.title('Industry Financials Explorer')
+            st.subheader('Explore Ratios Rankings')
 
-    if selected == "Chart8":
-        st.title(f"You have selected {selected}")
-        ratios_per_industry_radar()
-        status()
+            Industry_Explore_Ratios_Rankings()
+        elif options == 'Explore Ratios Color Ranked':
 
-    if selected == "Chart9":
-        st.title(f"You have selected {selected}")
-        ratios_by_industry_bubblechart()
-        status()
+            st.title('Industry Financials Explorer')
+            st.subheader('Explore Ratios Color Ranked')
+
+            Industry_Explore_Ratios_Color_Ranked() 
+        elif options == 'Explore Ratios Details':
+
+            st.title('Industry Financials Explorer')
+            st.subheader('Explore Ratios Details')
+
+            Industry_Explore_Ratios_Details()
+        elif options == 'Explore Ratios Dashboard':
+
+            st.title('Industry Financials Explorer')
+            st.subheader('Explore Ratios Dashboard')
+
+            Industry_Explore_Ratios_Dashboard()
+
+
+    if st.session_state['page'] == 'Equities':
+        if options1 == 'colored_bar_chart':
+            colored_bar_chart()
+        elif options1 == 'bar_report':
+            bar_report()
+        elif options1 == 'scatterplot_report':
+            scatterplot_report()
+        elif options1 == 'sankey_report':
+            sankey_report()
+        elif options1 == 'sales_report':
+            sales_report()
+
+
 
 
 if __name__ == '__main__':
