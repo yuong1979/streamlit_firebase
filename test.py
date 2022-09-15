@@ -59,6 +59,31 @@ def ratios_by_industry_treemap():
 
 
 
+# #################################################################################################
+# ####### Correlation ###############################################
+# #################################################################################################
+# python -c 'from others import correlation; correlation()'
+
+def correlation():
+
+    df = pd.read_csv('dataframe_csv/industry_data.csv', index_col=1)
+    df = df.drop("Unnamed: 0", axis='columns')
+
+    cols = df.columns.values.tolist()
+    # changing all values to floats in dataframe
+    for i in cols:
+        df[i] = df[i].replace('', np.nan).dropna().astype(float)
+    correlation_matrix = df.corr()
+    correlation_matrix.to_csv('dataframe_csv/correlation_matrix.csv', index = True)
+
+    # # consider removing shell companies industry because it is screwing up everything
+    # # export to google sheets on heatmap indicates that return on assets and return on equity are correlated at 0.885
+    # # export to google sheets on heatmap indicates that quick ratio and current ratio are correlated at 0.860
+    # # export to google sheets on heatmap indicates that profit margins and ebitamargins are correlated at 0.826
+    # # export to google sheets on heatmap indicates that Median_earningsQuarterlyGrowth and Median_earningsGrowth are correlated at 0.94
+    # # export to google sheets on heatmap indicates that Median_dividendRate and Median_trailingAnnualDividendRate are correlated at 0.97
+
+
 
 
 # 'ebitdaUSD': True,

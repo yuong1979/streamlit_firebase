@@ -2,11 +2,11 @@ import streamlit as st
 
 from firebase_admin import auth
 from streamlit_option_menu import option_menu
-from sales_dashboard import sales_report
-from sankey_dashboard import sankey_report
-from scatterplot import scatterplot_report
-from bar_chart import bar_report
-from coloredbarchart import colored_bar_chart
+from charts_sample.sales_dashboard import sales_report
+from charts_sample.sankey_dashboard import sankey_report
+from charts_sample.scatterplot import scatterplot_report
+from charts_sample.bar_chart import bar_report
+from charts_sample.coloredbarchart import colored_bar_chart
 from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
 
 from charts.IndustryExploreRatiosDetails import Industry_Explore_Ratios_Details
