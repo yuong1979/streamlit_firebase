@@ -60,11 +60,11 @@ Comment out the development code on Dockerfile
 
 **Build image**
 
-`gcloud builds submit --tag gcr.io/test-python-api-spreadsheets/finance_app`
+`gcloud builds submit --tag gcr.io/testing-33c79/finance_app`
 
 **Deploy image**
 
-`gcloud run deploy --image gcr.io/test-python-api-spreadsheets/finance_app`
+`gcloud run deploy --image gcr.io/testing-33c79/finance_app`
 
 
 

@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle, convert_digits
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -10,49 +10,39 @@ import numpy as np
 # #################################################################################################
 # python -c 'from IndustryDashboard import Industry_Dashboard; Industry_Dashboard()'
 
-trillion = 1000000000000
-billion = 1000000000
-million = 1000000
-thousand = 1000
 
-def convert_digits(num):
-    if num >= trillion:
-        number = str(round(float(num / trillion),2)) + 'T'        
-    elif num >= billion:
-        number = str(round(float(num / billion),2)) + 'B'
-    elif num >= million:
-        number = str(round(float(num / million),2)) + 'M'
-    elif num >= thousand:
-        number = str(round(float(num / thousand),2)) + 'K'
-    else:
-        number = num
-    return number
+def handle_select():
+    st.session_state.ind_type=st.session_state.ind_IndustryExploreRatiosDashboard
+
 
 
 def Industry_Explore_Ratios_Dashboard():
 
-    df = extract_csv('dataframe_csv/industry_data.csv')
+    # df = pd.read_pickle('data/industry_data.pickle')
+    df = extract_industry_pickle()
 
-    last_recorded_datetime = df['daily_agg_record_time'].min().split('.')[0]
+    last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
     cols = df.columns.values.tolist()
+    cols.remove("industry")
+
+    # df = convert_emptystr2na(df,cols)
 
     # #to be replaced with cols on top when finish using
     # cols = ['forwardEps', 'trailingEps', 'forwardPE', 'trailingPE', 'pegRatio', 'trailingPegRatio', 'enterpriseToEbitda', 'enterpriseToRevenue']
 
+    df.set_index('industry', inplace=True)
+
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
 
-
     ind_list = df.index.values.tolist()
 
-
-
-    # selected_ind = "Uranium"
+    # ind_type = "Uranium"
 
     #retrieving the selected industry from sessions
-    if 'selected_ind' in st.session_state:
-        sel_ind = st.session_state['selected_ind']
+    if 'ind_type' in st.session_state:
+        sel_ind = st.session_state['ind_type']
         index_no = ind_list.index(sel_ind)
     else:
         index_no = 0
@@ -65,13 +55,14 @@ def Industry_Explore_Ratios_Dashboard():
             tuple(ind_list),
             index = index_no,
             key = "ind_IndustryExploreRatiosDashboard",
+            on_change = handle_select
         )
     with col2:
         st.write('')
 
-    #recording the selected industry from sessions
-    st.session_state['selected_ind'] = selected_ind
-
+    # #recording the selected industry from sessions
+    # if 'ind_type' not in st.session_state:
+    #     st.session_state['ind_type'] = selected_ind
 
 
     company_count = df.loc[selected_ind, 'company_count']

@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -15,7 +15,7 @@ import numpy as np
 
 
 # sort and and convert dataframe into a format that can be displayed in chart 
-@st.cache()
+@st.experimental_memo
 def process_dataframe(df, kpi_mapping, kpi):
     #to determine if the ratio is postive or negative
     if kpi_mapping[kpi] == True:
@@ -29,19 +29,26 @@ def process_dataframe(df, kpi_mapping, kpi):
     return df_grouped
 
 
+def handle_select():
+    st.session_state.ind_type=st.session_state.ind_IndustryExploreRatiosDetails
 
 
 def Industry_Explore_Ratios_Details():
 
-    df = extract_csv('dataframe_csv/industry_data.csv')
+    # df = pd.read_pickle('data/industry_data.pickle')
+    df = extract_industry_pickle()
 
-    last_recorded_datetime = df['daily_agg_record_time'].min().split('.')[0]
+    last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
     cols = df.columns.values.tolist()
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
+    cols.remove("industry")
 
+    # df = convert_emptystr2na(df,cols)
+    df.set_index('industry', inplace=True)
     ind_list = df.index.values.tolist()
+
 
     # st.write('\n')
     # st.markdown('---')
@@ -49,8 +56,8 @@ def Industry_Explore_Ratios_Details():
     default_testing = ['grossMargins', 'operatingMargins']
 
     #retrieving the selected industry from sessions
-    if 'selected_ind' in st.session_state:
-        sel_ind = st.session_state['selected_ind']
+    if 'ind_type' in st.session_state:
+        sel_ind = st.session_state['ind_type']
         index_no = ind_list.index(sel_ind)
     else:
         index_no = 0
@@ -64,7 +71,11 @@ def Industry_Explore_Ratios_Details():
             tuple(ind_list),
             index=index_no,
             key = "ind_IndustryExploreRatiosDetails",
+            on_change = handle_select,
         )
+
+    # if 'ind_type' not in st.session_state:
+    #     st.session_state['ind_type'] = selected_ind
 
     with col2:
         selected_kpi = st.multiselect(
@@ -73,12 +84,12 @@ def Industry_Explore_Ratios_Details():
             default= None
         )
 
-    if len(selected_kpi) >= 5:
-        st.error('User may only choose a maximum of 4 ratios')
+    if len(selected_kpi) >= 4:
+        st.error('User may only choose a maximum of 3 ratios')
         st.stop()
     
-    #recording the selected industry from sessions
-    st.session_state['selected_ind'] = selected_ind
+    # #recording the selected industry from sessions
+    # st.session_state['selected_ind'] = selected_ind
 
     color_map = {}
     for i in ind_list:

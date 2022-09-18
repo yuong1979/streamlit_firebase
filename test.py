@@ -15,6 +15,7 @@ import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
 import math
+from time import process_time
 
 firestore_api_key = access_secret(firestore_api_key, project_id)
 firestore_api_key_dict = json.loads(firestore_api_key)
@@ -29,6 +30,18 @@ service = build('sheets', 'v4', credentials=gscredentials, cache_discovery=False
 sheet = service.spreadsheets()
 
 
+
+
+
+
+# #################################################################################################
+# ####### Testing ###############################################
+# #################################################################################################
+# python -c 'from test import testing; testing()'
+
+def testing():
+
+    df = pd.read_pickle('data/industry_data.pickle')
 
 
 
@@ -60,7 +73,7 @@ def ratios_by_industry_treemap():
 
 
 # #################################################################################################
-# ####### Correlation ###############################################
+# ####### Correlation #############################################################################
 # #################################################################################################
 # python -c 'from others import correlation; correlation()'
 

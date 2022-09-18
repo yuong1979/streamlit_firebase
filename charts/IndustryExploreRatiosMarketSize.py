@@ -1,42 +1,21 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle, convert_digits
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
 import numpy as np
+import datetime
 
 
 
-trillion = 1000000000000
-billion = 1000000000
-million = 1000000
-thousand = 1000
 
-def convert_digits(num):
-    if num >= trillion:
-        number = str(round(float(num / trillion),2)) + 'T'        
-    elif num >= billion:
-        number = str(round(float(num / billion),2)) + 'B'
-    elif num >= million:
-        number = str(round(float(num / million),2)) + 'M'
-    elif num >= thousand:
-        number = str(round(float(num / thousand),2)) + 'K'
-    else:
-        number = num
-    return number
-
-def convert_negative(num):
-    if num < 0:
-        number = 0
-    else:
-        number = num
-    return number
-
-@st.cache()
-def clean_dataframe(df, size_kpi):
+@st.experimental_memo
+def alter_size_df(df, size_kpi):
     for i in size_kpi:
+        #fillna works here because we are only cleaning usd amounts, it should not be used for % KPIs
         df[i].fillna(0, inplace=True)
-        df[i] = df[i].apply(convert_negative)
+        #convert number to zero if it is an empty string or less than zero because zero below zero does not make sense for size
+        df[i] = df[i].apply(lambda x: 0 if (isinstance(x, str) or x < 0) else x)
         name = str(i) + "_short"
         df[name] = df[i]
         #create two columns with shortened numbers for easy viewing of large numbers
@@ -52,15 +31,17 @@ def clean_dataframe(df, size_kpi):
 
 def Industry_Explore_Ratios_Market_Size():
 
-    df = extract_csv('dataframe_csv/industry_data.csv')
+    # df = pd.read_pickle('data/industry_data.pickle')
+    df = extract_industry_pickle()
 
-    last_recorded_datetime = df['daily_agg_record_time'].min().split('.')[0]
+    last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
     allcols = df.columns.values.tolist()
     #remove unwanted kpis
     cols = [i for i in allcols if i not in kpi_remove]
+    cols.remove("industry")
 
-    df = df.reset_index()
+    # df = convert_emptystr2na(df,cols)
 
     test = ['company_count', 'ebitdaUSD', 'marketCapUSD', 'totalRevenueUSD', 'fullTimeEmployees']
 
@@ -70,7 +51,7 @@ def Industry_Explore_Ratios_Market_Size():
     tuple_size_kpi_select = tuple(size_kpi)
 
     #remove negative profits and include new columns with shortened names for numbers
-    df = clean_dataframe(df, size_kpi)
+    df = alter_size_df(df, size_kpi)
 
     with st.container():
         # st.write("Indicators for X/Y axis")
@@ -112,6 +93,8 @@ def Industry_Explore_Ratios_Market_Size():
     selected_kpi_y_list = df[selected_kpi_y].tolist()
     selected_kpi_size_list = df[selected_kpi_size + "_short"].tolist()
     selected_kpi_color_list = df[selected_kpi_color].tolist()
+
+
 
     log_type = True
     #interesting because you see oil and gas ahead of all the rest

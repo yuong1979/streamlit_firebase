@@ -15,7 +15,7 @@ from charts.IndustryExploreRatiosColorRanked import Industry_Explore_Ratios_Colo
 from charts.IndustryExploreRatiosMarketSize import Industry_Explore_Ratios_Market_Size
 from charts.IndustryExploreRatiosRankings import Industry_Explore_Ratios_Rankings
 
-from tools import updating_industry_csv
+# from tools import updating_industry_csv
 from authentication_functions import home, status
 
 
@@ -23,8 +23,10 @@ from authentication_functions import home, status
 def main():
     st.set_page_config(page_title="Financial Assets Explorer", page_icon=":chart_with_upwards_trend:", layout="wide") #layout can be centered
 
-    #refreshing the data if its not refreshing
-    updating_industry_csv()
+    # #refreshing the data if its not refreshing
+    # updating_industry_csv()
+
+    # Industry_Explore_Ratios_Details()
 
     #remove streamlit logo and menu
     hide_st_style = """

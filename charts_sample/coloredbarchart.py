@@ -32,7 +32,7 @@ def colored_bar_chart():
 
 
     st.markdown('---')
-    df = pd.read_csv('data/orders.csv')
+    df = pd.read_csv('sample_data/orders.csv')
     st.dataframe(df)
     groupby_column = st.selectbox(
         'What would you like to analyse?',

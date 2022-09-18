@@ -16,7 +16,7 @@ def sales_report():
     # ---- READ CSV ----
     @st.cache
     def get_data_from_csv():
-        df = pd.read_csv('data/sales.csv')
+        df = pd.read_csv('sample_data/sales.csv')
         # Add 'hour' column to dataframe
         df["hour"] = pd.to_datetime(df["Time"], format="%H:%M").dt.hour
         return df

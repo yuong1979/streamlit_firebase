@@ -6,7 +6,7 @@ import plotly.express as px
 
 def scatterplot_report():
 
-    df = pd.read_csv('data/data.csv')
+    df = pd.read_csv('sample_data/data.csv')
 
     # Functions for each of the pages
     def home(df):

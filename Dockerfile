@@ -38,9 +38,8 @@
 # gcloud run deploy streamlitappprod --image gcr.io/blockmacro-7b611/streamlitappprod --platform managed --project=blockmacro-7b611 --allow-unauthenticated --region us-east1
 
 ######## TESTING DATABASE ########
-# gcloud builds submit --tag gcr.io/testing-33c79/streamlitapptest --project=testing-33c79
-# gcloud run deploy streamlitapptest --image gcr.io/testing-33c79/streamlitapptest --platform managed --project=testing-33c79 --allow-unauthenticated --region us-east1
-
+# gcloud builds submit --tag gcr.io/testing-33c79/financeapp --project=testing-33c79
+# gcloud run deploy financeapp --image gcr.io/testing-33c79/financeapp --platform managed --project=testing-33c79 --allow-unauthenticated --region us-central1
 
 FROM python:3.8
 
