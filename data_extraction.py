@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import json
 from google.cloud.firestore import Client
 from secret import access_secret
-from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key
+from settings import project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, schedule_function_key, firebase_auth_api_key, cloud_storage_key
 from tools import error_email, export_gs_func, kpi_mapping, kpi_remove
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
@@ -15,8 +15,8 @@ import plotly.graph_objects as go
 import math
 from time import process_time
 import pytz
-
-
+from google.cloud import storage
+import os
 
 
 firestore_api_key = access_secret(firestore_api_key, project_id)
@@ -149,7 +149,7 @@ def daily_equity_extraction():
 
     df.index.names = ['Ticker']
 
-    df.to_pickle('data/daily_equity_kpi.pickle')
+    df.to_pickle('data/eq_daily_kpi.pickle')
 
 
 
@@ -237,9 +237,9 @@ def industry_extract_csv():
     # print (df)
 
 
-    df.to_pickle('data/industry_data.pickle')
+    df.to_pickle('data/eq_daily_industry.pickle')
 
 
 
-    # df.to_pickle('data/daily_equity_kpi.pickle')
-    # df = pd.read_pickle('data/daily_equity_kpi.pickle')
+    # df.to_pickle('data/eq_daily_kpi.pickle')
+    # df = pd.read_pickle('data/eq_daily_kpi.pickle')

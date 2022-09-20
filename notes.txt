@@ -13,3 +13,14 @@ pip install matplotlib
 
 pip install streamlit pyrebase4 firebase_admin plotly streamlit-option-menu matplotlib
 
+
+
+
+pip install --upgrade google-cloud-storage
+pip install --upgrade google-api-python-client
+
+
+
+
+
+

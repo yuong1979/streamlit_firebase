@@ -15,16 +15,27 @@ from charts.IndustryExploreRatiosColorRanked import Industry_Explore_Ratios_Colo
 from charts.IndustryExploreRatiosMarketSize import Industry_Explore_Ratios_Market_Size
 from charts.IndustryExploreRatiosRankings import Industry_Explore_Ratios_Rankings
 
-# from tools import updating_industry_csv
+from tools import update_data
 from authentication_functions import home, status
+
+import time
+import threading
+
+
+def task():
+    print ('start uploading data...')
+    status = update_data()
+    print (status)
+
 
 
 
 def main():
-    st.set_page_config(page_title="Financial Assets Explorer", page_icon=":chart_with_upwards_trend:", layout="wide") #layout can be centered
 
-    # #refreshing the data if its not refreshing
-    # updating_industry_csv()
+    # check if new pickle data is uploaded when and if it needs to be refreshed
+    threading.Thread(target=task).start()
+
+    st.set_page_config(page_title="Financial Assets Explorer", page_icon=":chart_with_upwards_trend:", layout="wide") #layout can be centered
 
     # Industry_Explore_Ratios_Details()
 

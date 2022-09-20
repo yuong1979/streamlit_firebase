@@ -1,7 +1,7 @@
 import smtplib
 from email.message import EmailMessage
 from settings import (project_id, firebase_database, fx_api_key, firestore_api_key, google_sheets_api_key, 
-                    schedule_function_key, firebase_auth_api_key, email_password)
+                    schedule_function_key, firebase_auth_api_key, email_password, cloud_storage_key)
 from secret import access_secret
 import pytz
 from datetime import datetime
@@ -14,6 +14,9 @@ from firebase_admin import firestore
 from googleapiclient.discovery import build
 import streamlit as st
 import os
+from google.cloud import storage
+
+
 
 email_password = access_secret(email_password, project_id)
 
@@ -26,6 +29,58 @@ sheet = service.spreadsheets()
 
 
 
+# #######################################################################################################
+# ############### Refreshing data files inside data/ .pickle for google storage #########################
+# #######################################################################################################
+# python -c 'from data_extraction import update_data; update_data()'
+
+# @st.experimental_memo
+def update_data():
+
+    df = pd.read_pickle('data/datetime_update.pickle')
+    earliest_datetime = df['datetime'].max()
+
+    tz_SG = pytz.timezone('Singapore')
+    current_datetime = datetime.now(tz_SG)
+
+    time_in_hours = 24
+    time_seconds = 60 * 60 * time_in_hours
+
+    time_diff = current_datetime - earliest_datetime
+
+    message = "Exiting because the latest entry has been extracted less than {} hours ago".format(time_in_hours)
+
+    if time_diff.seconds < time_seconds:
+        return (message)
+        exit()
+
+    data_to_update = ['eq_daily_agg.pickle', 'eq_daily_kpi.pickle', 'eq_daily_industry.pickle']
+
+    #Retrieving the bucket details
+    key_str = str(access_secret(cloud_storage_key, project_id))
+    storage_client = storage.Client(key_str)
+    bucket = storage_client.get_bucket('test_cloud_storage_bucket_blockmacro')
+
+    for i in data_to_update:
+
+        #loading new set of data into streamlit
+        blop = bucket.blob(blob_name = i).download_as_string()
+        path = 'data/' + str(i)
+        with open (path, "wb") as f:
+                f.write(blop)
+
+        #updating the recordtime dataframe
+        name = i.split('.')[0]
+        datetime_df = df[df['datatype'] == name]
+        df.loc[datetime_df.index,['datatype','datetime']] = [name,current_datetime]
+    
+
+    #update the datetime pickle
+    df.to_pickle('data/datetime_update.pickle')
+
+    return ("Data successfully updated")
+
+
 
 
 # #######################################################################################################
@@ -36,7 +91,7 @@ sheet = service.spreadsheets()
 # @st.cache()
 @st.experimental_memo
 def extract_industry_pickle():
-    df = pd.read_pickle('data/industry_data.pickle')
+    df = pd.read_pickle('data/eq_daily_industry.pickle')
     cols = df.columns.values.tolist()
     for i in cols:
         df[i] = df[i].apply(lambda x: None if x=="" else x)

@@ -12,6 +12,7 @@ if project == "test":
     schedule_function_key = "test_schedule_function_key"
     firebase_auth_api_key = "test_firebase_auth"
     email_password = "test_email_password"
+    cloud_storage_key = "test_cloud_storage"
 
 else:
 
@@ -24,7 +25,7 @@ else:
     schedule_function_key = "blockmacro_schedule_function_key"
     firebase_auth_api_key = "blockmacro_firebase_auth"
     email_password = "blockmacro_email_password"
-
+    cloud_storage_key = ""
 
 
 ## streamlit theme secondary color - copy this to .streamlit/config.toml to change the theme color

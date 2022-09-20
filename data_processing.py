@@ -36,7 +36,7 @@ db = Client(firebase_database, fbcredentials)
 
 def daily_equity_processing():
 
-    df = pd.read_pickle('data/daily_equity_kpi.pickle')
+    df = pd.read_pickle('data/eq_daily_kpi.pickle')
 
     t1_start = process_time()
 
@@ -57,7 +57,7 @@ def daily_equity_processing():
 
     ind_count = len (cln_ind_unq)
 
-    daily_eq_agg_df = pd.DataFrame(columns = ['industry', 'kpi', 'value','rank_fraction', 'rank_%', 'median', 'sum', 'max', 'min'])
+    eq_daily_agg = pd.DataFrame(columns = ['industry', 'kpi', 'value','rank_fraction', 'rank_%', 'median', 'sum', 'max', 'min'])
 
     count = 0
     for i in cln_ind_unq:
@@ -103,15 +103,15 @@ def daily_equity_processing():
             #add a function to change all those with 1/1 or 1 in rank_% to nan
 
             finaldf.drop(columns=[key, 'rank', 'count_eq'], inplace=True)
-            daily_eq_agg_df = pd.concat([daily_eq_agg_df, finaldf])
+            eq_daily_agg = pd.concat([eq_daily_agg, finaldf])
 
         count = count + 1
         print (str(count) + "/" + str(ind_count))
 
 
-    # daily_eq_agg_df.to_csv('daily_eq_agg_df.csv')
+    # eq_daily_agg.to_csv('eq_daily_agg.csv')
 
-    daily_eq_agg_df.to_pickle('data/daily_eq_agg_df.pickle')
+    eq_daily_agg.to_pickle('data/eq_daily_agg.pickle')
 
 
     t1_stop = process_time()

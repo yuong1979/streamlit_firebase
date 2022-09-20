@@ -20,7 +20,7 @@ def handle_select():
 
 def Industry_Explore_Ratios_Rankings():
     
-    # df = pd.read_pickle('data/industry_data.pickle')
+    # df = pd.read_pickle('data/eq_daily_industry.pickle')
     df = extract_industry_pickle()
 
     last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")

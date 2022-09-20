@@ -35,7 +35,7 @@ def handle_select():
 
 def Industry_Explore_Ratios_Details():
 
-    # df = pd.read_pickle('data/industry_data.pickle')
+    # df = pd.read_pickle('data/eq_daily_industry.pickle')
     df = extract_industry_pickle()
 
     last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
@@ -198,7 +198,7 @@ def Industry_Explore_Ratios_Details():
 #     st.subheader('Explore ratios comparisons of individual industries')
 
 #     # ratios_by_industry()
-#     df = pd.read_csv('dataframe_csv/industry_data.csv', index_col=1)
+#     df = pd.read_csv('dataframe_csv/eq_daily_industry.csv', index_col=1)
 #     df = df.drop("Unnamed: 0", axis='columns')
 #     cols = df.columns.values.tolist()
 #     #remove unwanted kpis
