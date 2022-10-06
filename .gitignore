@@ -1,6 +1,7 @@
-secret/
-firebase_app_config.json
+googlesheetsapi-keys.json
 serviceAccountKey.json
+secret/
+*.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

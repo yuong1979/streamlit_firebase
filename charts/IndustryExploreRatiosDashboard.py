@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle, convert_digits
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle, convert_digits
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -21,24 +21,25 @@ def Industry_Explore_Ratios_Dashboard():
     # df = pd.read_pickle('data/eq_daily_industry.pickle')
     df = extract_industry_pickle()
 
+    # print (df.dtypes)
+
     last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
     cols = df.columns.values.tolist()
-    cols.remove("industry")
-
-    # df = convert_emptystr2na(df,cols)
-
-    # #to be replaced with cols on top when finish using
-    # cols = ['forwardEps', 'trailingEps', 'forwardPE', 'trailingPE', 'pegRatio', 'trailingPegRatio', 'enterpriseToEbitda', 'enterpriseToRevenue']
 
     df.set_index('industry', inplace=True)
 
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
+    cols.remove("industry")
+    unwanted_kpis = []
+    for i in cols:
+        if ("rank" in i) or ("alpha" in i):
+            unwanted_kpis.append(i)
+    cols = [x for x in cols if x not in unwanted_kpis]
+
 
     ind_list = df.index.values.tolist()
-
-    # ind_type = "Uranium"
 
     #retrieving the selected industry from sessions
     if 'ind_type' in st.session_state:
@@ -60,6 +61,8 @@ def Industry_Explore_Ratios_Dashboard():
     with col2:
         st.write('')
 
+    # print (st.session_state)
+
     # #recording the selected industry from sessions
     # if 'ind_type' not in st.session_state:
     #     st.session_state['ind_type'] = selected_ind
@@ -73,6 +76,8 @@ def Industry_Explore_Ratios_Dashboard():
     total_revenue = convert_digits(total_revenue)
 
     selected_kpi = cols
+
+
 
     #collecting the median and max values for comparison
     value_abs = {}
@@ -366,49 +371,49 @@ def Industry_Explore_Ratios_Dashboard():
 
 
 
-        fig = go.Figure()
+        # fig = go.Figure()
 
-        fig.add_trace(go.Scatterpolar(
-            r = main_list,
-            theta = cols,
-            fill = 'toself',
-            # showlegend=True,
-            fillcolor = 'green',
-            line_shape = 'spline', #linear
-            text = values_list, 
-            opacity=0.6,
-            mode = 'markers+text', 
-            textfont_color='red', 
-            # textposition='bottom center',
-            marker_color='green',
+        # fig.add_trace(go.Scatterpolar(
+        #     r = main_list,
+        #     theta = cols,
+        #     fill = 'toself',
+        #     # showlegend=True,
+        #     fillcolor = 'green',
+        #     line_shape = 'spline', #linear
+        #     text = values_list, 
+        #     opacity=0.6,
+        #     mode = 'markers+text', 
+        #     textfont_color='red', 
+        #     # textposition='bottom center',
+        #     marker_color='green',
 
-        ))
+        # ))
 
-        fig.add_trace(go.Scatterpolar(
-            r = median_rank_list,
-            theta = cols,
-            # fill = 'toself',
-        ))
+        # fig.add_trace(go.Scatterpolar(
+        #     r = median_rank_list,
+        #     theta = cols,
+        #     # fill = 'toself',
+        # ))
 
-        fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-            visible=False,
-            range=[0, 1]
-            )),
-            showlegend=False
-        )
+        # fig.update_layout(
+        # polar=dict(
+        #     radialaxis=dict(
+        #     visible=False,
+        #     range=[0, 1]
+        #     )),
+        #     showlegend=False
+        # )
 
-        fig.update_layout(
-            autosize=False,
-            # width=800,
-            # margin=dict(l=20, r=20, t=100, b=100),
-            height=800,
-        )
+        # fig.update_layout(
+        #     autosize=False,
+        #     # width=800,
+        #     # margin=dict(l=20, r=20, t=100, b=100),
+        #     height=800,
+        # )
         
-        hovertemplate = ('Ratio: %{customdata[0]}<br>' + 'Ranking: %{customdata[1]}<br>' + 'Value: %{customdata[2]}<br><extra></extra>') #AT
-        customdata = np.stack((cols, rank_fraction_list, values_list), axis=-1) #AT
-        fig.update_traces(customdata=customdata,hovertemplate=hovertemplate) #AT
+        # hovertemplate = ('Ratio: %{customdata[0]}<br>' + 'Ranking: %{customdata[1]}<br>' + 'Value: %{customdata[2]}<br><extra></extra>') #AT
+        # customdata = np.stack((cols, rank_fraction_list, values_list), axis=-1) #AT
+        # fig.update_traces(customdata=customdata,hovertemplate=hovertemplate) #AT
 
 
         # st.plotly_chart(fig, use_container_width=True)

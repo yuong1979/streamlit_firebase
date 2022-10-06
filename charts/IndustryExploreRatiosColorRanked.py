@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -22,8 +22,6 @@ def Industry_Explore_Ratios_Color_Ranked():
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
     cols.remove("industry")
-
-    # df = convert_emptystr2na(df,cols)
 
     # st.write('\n')
     # st.markdown('---')

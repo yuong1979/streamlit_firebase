@@ -17,6 +17,11 @@ import plotly.graph_objects as go
 import math
 from time import process_time
 
+# imports
+from plotly.subplots import make_subplots
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle, convert_digits
+
+
 firestore_api_key = access_secret(firestore_api_key, project_id)
 firestore_api_key_dict = json.loads(firestore_api_key)
 fbcredentials = service_account.Credentials.from_service_account_info(firestore_api_key_dict)
@@ -34,14 +39,120 @@ sheet = service.spreadsheets()
 
 
 
+@st.experimental_memo
+def alter_size_df(df, size_kpi):
+
+
+    for i in size_kpi:
+
+        print (i)
+
+        #fillna works here because we are only cleaning usd amounts, it should not be used for % KPIs
+        df[i].fillna(0, inplace=True)
+        #convert number to zero if it is an empty string or less than zero because zero below zero does not make sense for size
+        df[i] = df[i].apply(lambda x: 0 if (isinstance(x, str) or x < 0) else x)
+        name = str(i) + "_short"
+        df[name] = df[i]
+        #create two columns with shortened numbers for easy viewing of large numbers
+        df[name] = df[name].apply(convert_digits)
+
+
+
+    # if num >= trillion:
+    #     number = str(round(float(num / trillion),2)) + 'T'        
+    # elif num >= billion:
+    #     number = str(round(float(num / billion),2)) + 'B'
+    # elif num >= million:
+    #     number = str(round(float(num / million),2)) + 'M'
+    # elif num >= thousand:
+    #     number = str(round(float(num / thousand),2)) + 'K'
+    # else:
+    #     number = num
+    # return number
+
+
+    return df
+
+
+# df['ebitdaUSD_short']
+# df['marketCapUSD_short']
+# df['totalRevenueUSD_short']
+
+
+
+
 # #################################################################################################
 # ####### Testing ###############################################
 # #################################################################################################
-# python -c 'from test import testing; testing()'
+# python -c 'from test import test; test()'
 
-def testing():
 
-    df = pd.read_pickle('data/industry_data.pickle')
+
+def test():
+
+    print ('test')
+
+
+    df_daily_kpi = pd.read_pickle('data/eq_daily_kpi_1.pickle')
+
+    print (df_daily_kpi.columns.tolist())
+
+    print (df_daily_kpi.dtypes)
+
+    #structure the data such that qtrly cattype will have last date as the quarterly last and the annual cattype will have dec 31 of each year as last date
+    #if quarterly data than the last date should be empty, if annual data than then the last date for quarter should be empty
+
+
+
+    # selected_industry = ticker_df[ticker_df.index == selected_ticker]['industry'].values[0]
+
+    # #test the selection of annual and quarterly cattype and check if each has only yearly numbers and quarterly numbers respectively
+
+    # df_industry = df_industry_sum[(df_industry_sum['industry'] == selected_industry) & (df_industry_sum['cattype'] == selected_cat) & (df_industry_sum['kpi'] == selected_kpi)]
+    # df_industry = df_industry.sort_values(by='last_date', ascending=True)
+
+    #test the selection of annual and quarterly cattype and check if each has only yearly numbers and quarterly numbers respectively
+
+
+    # df_industry = df_industry_sum[(df_industry_sum['industry'] == 'Airlines') & (df_industry_sum['cattype'] == selected_cat) & (df_industry_sum['kpi'] == selected_kpi)]
+
+
+
+
+    # df = pd.read_pickle('data/eq_daily_industry.pickle')
+
+    # # print (df)
+
+    # print (df.dtypes)
+
+
+    # Key Items
+
+    # Gross Profit
+    # Net Income
+    # Operating Income
+    # Total Revenue
+    # Ebit
+
+    # Total Cashflows From Investing Activities
+    # Change To Netincome
+    # Total Cash From Operating Activities
+    # Net Income
+    # Change In Cash
+    # Total Cash From Financing Activities
+
+    # Total Current Assets
+    # Total Stockholder Equity
+    # Total Current Liabilities
+    # Total Assets
+
+
+    #### for reference
+    # rslt_df = dataframe[(dataframe['Age'] == 21) &
+    #       dataframe['Stream'].isin(options)]
+
+    # df = df[(df['cattype'] == 'financials') & (df['ticker'] == 'TSLA') & (df['kpi'] == 'Ebit')]
+    # df = df[(df['kpi'] == 'Gross Profit') & (df['ticker'] == 'TSLA')]
 
 
 

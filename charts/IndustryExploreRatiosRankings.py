@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -27,12 +27,22 @@ def Industry_Explore_Ratios_Rankings():
 
     cols = df.columns.values.tolist()
 
+    # print (cols)
+
     # #to be replaced with cols on top when finish using
     # cols = ['forwardEps', 'trailingEps', 'forwardPE', 'trailingPE', 'pegRatio', 'trailingPegRatio', 'enterpriseToEbitda', 'enterpriseToRevenue']
 
     #remove unwanted kpis
     cols = [i for i in cols if i not in kpi_remove]
     cols.remove("industry")
+    unwanted_kpis = []
+    for i in cols:
+        if ("rank" in i) or ("alpha" in i):
+            unwanted_kpis.append(i)
+    cols = [x for x in cols if x not in unwanted_kpis]
+
+
+
 
     # df = convert_emptystr2na(df,cols)
 
@@ -44,7 +54,6 @@ def Industry_Explore_Ratios_Rankings():
 
     # st.write('\n')
     # st.markdown('---')
-
 
     #retrieving the selected industry from sessions
     if 'ind_type' not in st.session_state:

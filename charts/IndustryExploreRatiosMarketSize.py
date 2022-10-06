@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle, convert_digits
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle#, convert_digits
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -9,18 +9,18 @@ import datetime
 
 
 
-@st.experimental_memo
-def alter_size_df(df, size_kpi):
-    for i in size_kpi:
-        #fillna works here because we are only cleaning usd amounts, it should not be used for % KPIs
-        df[i].fillna(0, inplace=True)
-        #convert number to zero if it is an empty string or less than zero because zero below zero does not make sense for size
-        df[i] = df[i].apply(lambda x: 0 if (isinstance(x, str) or x < 0) else x)
-        name = str(i) + "_short"
-        df[name] = df[i]
-        #create two columns with shortened numbers for easy viewing of large numbers
-        df[name] = df[name].apply(convert_digits)
-    return df
+# @st.experimental_memo
+# def alter_size_df(df, size_kpi):
+#     for i in size_kpi:
+#         #fillna works here because we are only cleaning usd amounts, it should not be used for % KPIs
+#         df[i].fillna(0, inplace=True)
+#         #convert number to zero if it is an empty string or less than zero because zero below zero does not make sense for size
+#         df[i] = df[i].apply(lambda x: 0 if (isinstance(x, str) or x < 0) else x)
+#         name = str(i) + "_short"
+#         df[name] = df[i]
+#         #create two columns with shortened numbers for easy viewing of large numbers
+#         df[name] = df[name].apply(convert_digits)
+#     return df
 
 
 
@@ -33,6 +33,8 @@ def Industry_Explore_Ratios_Market_Size():
 
     # df = pd.read_pickle('data/eq_daily_industry.pickle')
     df = extract_industry_pickle()
+
+    # print (df.dtypes)
 
     last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
@@ -50,8 +52,28 @@ def Industry_Explore_Ratios_Market_Size():
     tuple_kpi_select = tuple(cols)
     tuple_size_kpi_select = tuple(size_kpi)
 
-    #remove negative profits and include new columns with shortened names for numbers
-    df = alter_size_df(df, size_kpi)
+    # #remove negative profits and include new columns with shortened names for numbers
+    # df = alter_size_df(df, size_kpi)
+
+
+    # #remove negative profits and include new columns with shortened names for numbers
+    trillion = 1000_000_000_000
+    billion = 1000_000_000
+    million = 1000_000
+    thousand = 1000
+
+    for i in size_kpi:
+        #fillna works here because we are only cleaning usd amounts, it should not be used for % KPIs
+        df[i].fillna(0, inplace=True)
+        #convert number to zero if it is an empty string or less than zero because zero below zero does not make sense for size
+        df[i] = df[i].apply(lambda x: 0 if (isinstance(x, str) or x < 0) else x)
+        name = str(i) + "_short"
+        df.loc[df[i] >= thousand, name] = df[i].astype(float).divide(thousand).round(2).astype(str) + "K"
+        df.loc[df[i] >= million, name] = df[i].astype(float).divide(million).round(2).astype(str) + "M"
+        df.loc[df[i] >= billion, name] = df[i].astype(float).divide(billion).round(2).astype(str) + "B"
+        df.loc[df[i] >= trillion, name] = df[i].astype(float).divide(trillion).round(2).astype(str) + "T"
+
+
 
     with st.container():
         # st.write("Indicators for X/Y axis")

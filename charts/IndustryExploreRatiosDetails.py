@@ -1,5 +1,5 @@
 import pandas as pd
-from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_csv, extract_industry_pickle
+from tools import error_email, export_gs_func, kpi_mapping, kpi_remove, extract_industry_pickle
 import streamlit as st
 import plotly.express as px  # pip install plotly-express
 import plotly.graph_objects as go
@@ -38,6 +38,8 @@ def Industry_Explore_Ratios_Details():
     # df = pd.read_pickle('data/eq_daily_industry.pickle')
     df = extract_industry_pickle()
 
+    # print (df.dtypes)
+
     last_recorded_datetime = df['daily_agg_record_time'].min().strftime("%b %d %Y %H:%M:%S")
 
     cols = df.columns.values.tolist()
@@ -45,7 +47,6 @@ def Industry_Explore_Ratios_Details():
     cols = [i for i in cols if i not in kpi_remove]
     cols.remove("industry")
 
-    # df = convert_emptystr2na(df,cols)
     df.set_index('industry', inplace=True)
     ind_list = df.index.values.tolist()
 
@@ -74,6 +75,8 @@ def Industry_Explore_Ratios_Details():
             on_change = handle_select,
         )
 
+    # print (st.session_state)
+
     # if 'ind_type' not in st.session_state:
     #     st.session_state['ind_type'] = selected_ind
 
@@ -84,6 +87,8 @@ def Industry_Explore_Ratios_Details():
             default= None
         )
 
+    # print (st.session_state)
+
     if len(selected_kpi) >= 4:
         st.error('User may only choose a maximum of 3 ratios')
         st.stop()
@@ -93,7 +98,7 @@ def Industry_Explore_Ratios_Details():
 
     color_map = {}
     for i in ind_list:
-        color_map[i] = "grey"
+        color_map[i] = "lightgrey"
     
     color_map[selected_ind] = "red"
 
@@ -129,22 +134,23 @@ def Industry_Explore_Ratios_Details():
 
                 fig = px.bar(
                     df_grouped,
-                    x = 'industry',
-                    y = kpi,
+                    x = kpi,
+                    y = 'industry',
                     color = 'industry',
                     color_discrete_map = color_map,
                     # title=f'<b>{kpi}</b>',
                     template='plotly_white',
-                    orientation="v",
+                    orientation="h",
                 )
 
                 fig.update_layout(
                     barmode="relative",
                     showlegend=False,
                     autosize=True,
+                    plot_bgcolor='rgba(0,0,0,0)',
                     # width=800,
                     margin=dict(l=20, r=20, t=40, b=40),
-                    width=1000,
+                    height=1000,
                 )
 
                 st.plotly_chart(fig)

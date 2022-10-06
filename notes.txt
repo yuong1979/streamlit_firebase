@@ -1,18 +1,9 @@
-# radar chart
-# spider chart
-# treemap chart
-
-
 #neccessary packages
 pip install pyrebase4
 pip install firebase_admin
 pip install plotly
-pip install streamlit-option-menu
 pip install matplotlib
-
-
-pip install streamlit pyrebase4 firebase_admin plotly streamlit-option-menu matplotlib
-
+pip install google-cloud-secret-manager
 
 
 
@@ -20,7 +11,101 @@ pip install --upgrade google-cloud-storage
 pip install --upgrade google-api-python-client
 
 
+things to do
+
+Add count of companies (excluding null) and total industry market cap revenue ane ebit
+Include an industry dropdown where the equities below is filtered based on the industry chosen
+include a list of related equities as a button so users can quickly jump to related equity for comparison
+
+test the deployment and make sure everything runs and that the charting display does not take too long especially the time series and explore detail
+Add an order by 1)market cap/revenue/margin  for the equity select
+
+Include the list of top 10 other equities in the same industry 
+Check if there is a way to toggle users permission - insert a db on firebase that is connected to their authentication
+
+Add a chart that compares the trend of financials of various industries vs narket cap / will need equity from balance sheet - complex - this can wait
+
+
+
+# ############## groupby the datatypes of a column #################################################
+# type_breakdown = df['industry'].map(type).value_counts()
+# ############## summary of datatypes in a dataframe ###############################################
+# print (df.info(verbose=True)) / print (df.dtypes)
+# ############## Search for null in a column #######################################################
+# dftest = df[df['isEsgPopulated'].isnull()]
+# ############## iterating through each column for type ############################################
+# for i in df['industry']:
+#     if isinstance(i, int) == True:
+#         print ('integer', i)
+#     elif isinstance(i, float) == True:
+#         print ('float', i)
+#     elif isinstance(i, str) == True:
+#         print ('string', i)
+
+
+Things to do
+Fix github push issues
+Include the save session state to the equity market size and ratio details
+Deploying the app to production
+Test the extract/refresh of production app to update data live
+Pay ocbc loan
+pay rental for both
+reply to tp
+Remove usdc to earn yield in stargate and convex?
+Trigger the auto extract to firebase
+
+
+remove the word explore
+equity time series
+equity time series detail
+industry market comparison
+equity market comparison
 
 
 
 
+
+
+st.subheader('Explore Ratios Market Size')
+Industry_Explore_Ratios_Market_Size()
+
+-Ratios Mkt Size Comparison Bubble Chart
+
+st.subheader('Explore Ratios Rankings')
+Industry_Explore_Ratios_Rankings()
+
+-Ratios Ranking by Industry Radar Chart
+
+st.subheader('Explore Ratios Color Ranked')
+Industry_Explore_Ratios_Color_Ranked()
+
+-Ratios Ranking Color Bar Chart
+
+st.subheader('Explore Ratios Details')
+Industry_Explore_Ratios_Details()
+
+-Ratios Ranking by Industry
+
+st.subheader('Explore Ratios Dashboard')
+Industry_Explore_Ratios_Dashboard()
+
+st.subheader('Explore Market Size')
+Industry_Explore_Market_Size()
+
+st.subheader('Explore Equity Details')
+Equity_Explore_Detail()
+
+st.subheader('Explore Equity Time Series')
+Equity_Explore_Time_Series()
+
+st.subheader('Explore Equity / Industry')
+Industry_Explore_Industry_Market()
+
+st.subheader('Explore Equity / Industry')
+Equity_Explore_Ratios_Rankings()
+
+st.subheader('Explore Market Size')
+Equity_Explore_Market_Size()
+
+st.subheader('Explore Ratio Details')
+Equity_Explore_Ratios_Details()

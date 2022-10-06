@@ -12,6 +12,7 @@ import streamlit as st
 import json
 import pyrebase
 from secret import access_secret
+from admin_dashboard import ad_dash
 
 firebase_auth_api_key = access_secret(firebase_auth_api_key, project_id)
 firebase_auth_api_key_dict = json.loads(firebase_auth_api_key)
@@ -77,6 +78,10 @@ def home():
     else:
         st.title(f"Your Dashboard")
         st.subheader(f"More features coming, please stay tuned...")
+
+        ad_dash()
+
+
         submit_button = st.button(label="Logout", on_click=log_out)
 
 
