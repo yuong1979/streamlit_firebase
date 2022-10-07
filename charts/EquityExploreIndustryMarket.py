@@ -67,6 +67,7 @@ def Industry_Explore_Industry_Market():
     #clean the size of the scatterplot because it does not allow nan values and negative values -> replaced with zero
     df['marketCapUSD'] = df['marketCapUSD'].replace(np.nan, 0)
     df['totalRevenueUSD'] = df['totalRevenueUSD'].replace(np.nan, 0)
+    df['totalRevenueUSD'] = df['totalRevenueUSD'].apply(lambda x: 0 if x < 0 else x)
     df['ebitdaUSD'] = df['ebitdaUSD'].replace(np.nan, 0)
     df['ebitdaUSD'] = df['ebitdaUSD'].apply(lambda x: 0 if x < 0 else x)
 
