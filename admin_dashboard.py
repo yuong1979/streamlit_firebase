@@ -57,10 +57,39 @@ def data_stats():
         except:
             st.write("eq_hist_sum " + "NOT loaded")
 
+        col1, col2 = st.columns(2)
+
+        data_df = pd.read_pickle('data/eq_dl_stats.pickle')
+        data_df = data_df.rename({'rounded_updated_datetime': 'datetime', 'count_fx_ticker': 'count'}, axis=1).copy()
+
+        with col1:
+            equity_daily_kpi_df = data_df[data_df['type'] == 'equity_daily_kpi'].copy()
+            equity_daily_kpi_df.drop(['type'], axis=1, inplace=True)
+            st.subheader('equity_daily_kpi')
+            st.table(data=equity_daily_kpi_df)
+
+            equity_price_history_df = data_df[data_df['type'] == 'equity_price_history'].copy()
+            equity_price_history_df.drop(['type'], axis=1, inplace=True)
+            st.subheader('equity_price_history')
+            st.table(data=equity_price_history_df)
+
+        with col2:
+            equity_financials = data_df[data_df['type'] == 'equity_financials'].copy()
+            equity_financials.drop(['type'], axis=1, inplace=True)
+            st.subheader('equity_financials')
+            st.table(data=equity_financials)
+
+            fxhistorical_df = data_df[data_df['type'] == 'fxhistorical'].copy()
+            fxhistorical_df.drop(['type'], axis=1, inplace=True)
+            st.subheader('fxhistorical')
+            st.table(data=fxhistorical_df)
+
+
 
 def ad_dash():
 
     try:
+
         email = st.session_state['user']['email']
 
         df = pd.read_csv('data/datetime_update.csv')
@@ -75,18 +104,16 @@ def ad_dash():
             st.write("Logged in as admin: ", email)
             st.write("Last download datetime is: ", earliest_datetime)
 
-            data_stats()
-
             st.button("Run download Data", key=None, help=None, on_click=task, disabled=False)
-
             st.button("Refresh page", key=None, help=None, on_click=refresh, disabled=False)
 
+            data_stats()
 
     except:
         pass        
 
-    # if 'page' not in st.session_state:
-    #     st.session_state['page'] = 'Home'
+    if 'page' not in st.session_state:
+        st.session_state['page'] = 'Home'
 
-    # if 'ind_type' in st.session_state:
-    #     sel_ind = st.session_state['ind_type']
+    if 'ind_type' in st.session_state:
+        sel_ind = st.session_state['ind_type']

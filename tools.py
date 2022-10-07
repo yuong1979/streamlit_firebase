@@ -68,7 +68,7 @@ def update_data():
                     'eq_hist_price.pickle',
                     'eq_hist_details.pickle',
                     'eq_hist_sum.pickle',
-                    # 'testing.csv',
+                    'eq_dl_stats.pickle',
                     ]
 
     #Retrieving the bucket details
