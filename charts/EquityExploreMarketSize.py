@@ -88,6 +88,10 @@ def Equity_Explore_Market_Size():
         tuple(kpi_list),
     )
 
+    view_list = ['Absolute value', 'Rank vs Competitors']
+    selected_view = st.radio("Select a view", view_list, horizontal=True)
+
+
     tz_SG = pytz.timezone('Singapore')
     datenow = datetime.now(tz_SG)
     days_ago_annual = 365 * 4
@@ -219,12 +223,30 @@ def Equity_Explore_Market_Size():
         #replace the below with consolidated and uncomment the top part to display values and proportion
         consolidate = df['Consolidated']
 
+        if selected_view == "Absolute value":
+            view = df['values']
+
+            val_max_extra = ticker_df['values'].max() * 120/100
+            val_min_extra = ticker_df['values'].min() - (val_max_extra * 20/100)
+
+            viewrange = [val_min_extra, val_max_extra]
+
+        else:
+            view = df['rank']
+
+            rank_min = ticker_df['rank'].min()
+            rank_max = ticker_df['rank'].max()
+            #rank range is reversed because a smaller number indicates higher rank
+            viewrange = [rank_max+10, rank_min-10]
+
+
+
         dates = df['adj_last_date']
-        rank = df['rank']
+        
 
         fig.add_trace(go.Scatter(
                             x=dates, 
-                            y=rank,
+                            y=view,
                             mode='lines+markers',
                             name=i,
                             hovertext=consolidate,
@@ -232,16 +254,14 @@ def Equity_Explore_Market_Size():
 
         count = count + 1
 
-    rank_min = ticker_df['rank'].min()
-    rank_max = ticker_df['rank'].max()
+
+
     date_min = pd.to_datetime(ticker_df['adj_last_date'].min())
     date_max = pd.to_datetime(ticker_df['adj_last_date'].max())
 
     #with margin
     fig.update_xaxes(range = [date_min-pd.Timedelta(60, 'd'), date_max+pd.Timedelta(60, "d")])
-    fig.update_yaxes(
-        range = [rank_max+10, rank_min-10],
-        )
+    fig.update_yaxes(range = viewrange,)
 
     fig.update_layout(height=800, width=600,
 
