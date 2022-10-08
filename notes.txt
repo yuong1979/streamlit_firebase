@@ -44,15 +44,10 @@ Add a chart that compares the trend of financials of various industries vs narke
 
 
 Things to do
-Fix github push issues
 Include the save session state to the equity market size and ratio details
-Deploying the app to production
-Test the extract/refresh of production app to update data live
-Pay ocbc loan
-pay rental for both
-reply to tp
-Remove usdc to earn yield in stargate and convex?
-Trigger the auto extract to firebase
+For all the scatterplots / bubblecharts - do a black outline around the bubbles so they are much more visible
+For the line charts, move the name to the sides instead of ticker
+For the hovercharts, the color can remain by they need to have white background
 
 
 remove the word explore

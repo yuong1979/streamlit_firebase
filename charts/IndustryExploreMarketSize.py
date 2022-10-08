@@ -84,8 +84,9 @@ def Industry_Explore_Market_Size():
     date_one_yr_ago = datenow - timedelta(days = days_ago_quarterly)
     date_one_yr_ago = date_one_yr_ago.date()
 
-
-    # ## for testing purposes ###
+    # ############################################################################################
+    # ## for testing purposes ### Remember to uncoment the portion that sends data below to a csv
+    # ############################################################################################
     # df = extract_hist_details_qtr_cashflow()
     # kpi_list = ['Total Cashflows From Investing Activities', 'Change To Netincome', 'Total Cash From Operating Activities', 'Net Income', 'Change In Cash', 'Total Cash From Financing Activities']
     # selected_cat = "quarterly_cashflow"
@@ -167,11 +168,11 @@ def Industry_Explore_Market_Size():
 
     # print (merge_min_max_df)
 
-    # by_ind_df.to_csv('test1.csv', index=False)
-    # merge_min_max_df.to_csv('test.csv', index=False)
+    # by_ind_df.to_csv('by_ind_df.csv', index=False)
+    # merge_min_max_df.to_csv('merge_min_max_df.csv', index=False)
 
-    # by_ind_df = pd.read_csv('test1.csv')
-    # merge_min_max_df = pd.read_csv('test.csv')
+    # by_ind_df = pd.read_csv('by_ind_df.csv')
+    # merge_min_max_df = pd.read_csv('merge_min_max_df.csv')
 
 
 #############################################
@@ -228,7 +229,7 @@ def Industry_Explore_Market_Size():
     fig.update_layout(height=800, width=600,
 
                     showlegend=True, 
-                    title_text="Performance of industry " + str(selected_kpi),
+                    # title_text="Performance of industry " + str(selected_kpi),
                     legend=dict(
                         orientation='h',
                         yanchor="top",

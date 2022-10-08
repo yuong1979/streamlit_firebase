@@ -156,34 +156,38 @@ def Equity_Explore_Detail():
 
     # Add traces
     fig.add_trace(
-        go.Bar(x=dffin_date_list, y=dffin_val_list, name="yaxis data"),
+        go.Bar(x=dffin_date_list, y=dffin_val_list, name = selected_kpi),
         secondary_y=False,
     )
 
     if selected_comparison == 'Price':
         fig.add_trace(
-            go.Scatter(x=price_date_list, y=price_price_list, name="yaxis2 data"),
+            go.Scatter(x=price_date_list, y=price_price_list, name="Price"),
             secondary_y=True,
         )
+        fig.update_yaxes(title_text = "Price" , secondary_y=True)
     else:
         fig.add_trace(
-            go.Bar(x=industry_sum_date_list, y=industry_sum_values_list, name="yaxis2 data"),
+            go.Scatter(x=industry_sum_date_list, y=industry_sum_values_list, name="Industry Total"),
             secondary_y=True,
         )
+        fig.update_yaxes(title_text = "Industry Total", secondary_y=True)
 
 
 
     # Add figure title
     fig.update_layout(
-        title_text="Double Y Axis Example"
+        # title_text="Double Y Axis Example",
+        showlegend=False
+
     )
 
     # Set x-axis title
     fig.update_xaxes(title_text="xaxis title")
 
     # Set y-axes titles
-    fig.update_yaxes(title_text="<b>primary</b> yaxis title", secondary_y=False)
-    fig.update_yaxes(title_text="<b>secondary</b> yaxis title", secondary_y=True)
+    fig.update_yaxes(title_text = selected_kpi, secondary_y=False)
+    
 
 
     st.plotly_chart(fig, use_container_width=True)

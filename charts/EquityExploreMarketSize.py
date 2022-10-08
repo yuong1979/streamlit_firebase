@@ -25,6 +25,8 @@ import itertools
 
 def Equity_Explore_Market_Size():
 
+    print ('1')
+
     #hardcoded to save time in doing a unique extract from the raw pickle file
     cat_list = ['annual_profit&loss', 'annual_cashflow',  'quarterly_profit&loss', 'quarterly_cashflow', ]
 
@@ -266,7 +268,7 @@ def Equity_Explore_Market_Size():
     fig.update_layout(height=800, width=600,
 
                     showlegend=True, 
-                    title_text="Performance of industry " + str(selected_kpi),
+                    # title_text="Performance of industry " + str(selected_kpi),
                     legend=dict(
                         orientation='h',
                         yanchor="top",

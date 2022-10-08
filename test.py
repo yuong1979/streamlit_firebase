@@ -93,37 +93,15 @@ def test():
     print ('test')
 
 
-    df_daily_kpi = pd.read_pickle('data/eq_daily_kpi_1.pickle')
-
-    print (df_daily_kpi.columns.tolist())
-
-    print (df_daily_kpi.dtypes)
-
-    #structure the data such that qtrly cattype will have last date as the quarterly last and the annual cattype will have dec 31 of each year as last date
-    #if quarterly data than the last date should be empty, if annual data than then the last date for quarter should be empty
-
-
-
-    # selected_industry = ticker_df[ticker_df.index == selected_ticker]['industry'].values[0]
-
-    # #test the selection of annual and quarterly cattype and check if each has only yearly numbers and quarterly numbers respectively
-
-    # df_industry = df_industry_sum[(df_industry_sum['industry'] == selected_industry) & (df_industry_sum['cattype'] == selected_cat) & (df_industry_sum['kpi'] == selected_kpi)]
-    # df_industry = df_industry.sort_values(by='last_date', ascending=True)
-
-    #test the selection of annual and quarterly cattype and check if each has only yearly numbers and quarterly numbers respectively
-
-
-    # df_industry = df_industry_sum[(df_industry_sum['industry'] == 'Airlines') & (df_industry_sum['cattype'] == selected_cat) & (df_industry_sum['kpi'] == selected_kpi)]
 
 
 
 
-    # df = pd.read_pickle('data/eq_daily_industry.pickle')
 
-    # # print (df)
 
-    # print (df.dtypes)
+
+
+
 
 
     # Key Items
