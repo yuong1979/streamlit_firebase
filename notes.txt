@@ -44,10 +44,8 @@ Add a chart that compares the trend of financials of various industries vs narke
 
 
 Things to do
-Include the save session state to the equity market size and ratio details
-For all the scatterplots / bubblecharts - do a black outline around the bubbles so they are much more visible
-For the line charts, move the name to the sides instead of ticker
-For the hovercharts, the color can remain by they need to have white background
+
+
 
 
 remove the word explore

@@ -16,7 +16,7 @@ import pytz
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import itertools
-
+colors = px.colors.qualitative.Plotly
 
 # #################################################################################################
 # ####### Tree chart ratios of industries ###############################################
@@ -24,8 +24,6 @@ import itertools
 # python -c 'from charts.EquityExploreMarketSize import Equity_Explore_Market_Size; Equity_Explore_Market_Size()'
 
 def Equity_Explore_Market_Size():
-
-    print ('1')
 
     #hardcoded to save time in doing a unique extract from the raw pickle file
     cat_list = ['annual_profit&loss', 'annual_cashflow',  'quarterly_profit&loss', 'quarterly_cashflow', ]
@@ -57,9 +55,11 @@ def Equity_Explore_Market_Size():
     # merged_ticker_list = ticker_df['merged_name'].tolist()
 
 
-
     #import industry to map to hist details
     df_daily_kpi = pd.read_pickle('data/eq_daily_kpi.pickle')
+
+    # print (df_daily_kpi.columns.tolist())
+
 
     ind_list = df_daily_kpi['industry'].unique().tolist()
 
@@ -90,8 +90,6 @@ def Equity_Explore_Market_Size():
         tuple(kpi_list),
     )
 
-    view_list = ['Absolute value', 'Rank vs Competitors']
-    selected_view = st.radio("Select a view", view_list, horizontal=True)
 
 
     tz_SG = pytz.timezone('Singapore')
@@ -129,25 +127,30 @@ def Equity_Explore_Market_Size():
 
     df_merged = pd.merge(df, ticker_df, how='left', left_on = 'ticker', right_index = True)
 
-    #filtering only for required indicators
-
-    all_df = df_merged[(df_merged['kpi'] == selected_kpi) & (df_merged['cattype'] == selected_cat) & (df_merged['merged_name'].isin(selected_tics))]
-
-
+    #select the neccessary indicators
+    all_df = df_merged[(df_merged['kpi'] == selected_kpi) & (df_merged['cattype'] == selected_cat) & (df_merged['industry'] == selected_ind)]
     ticker_df = all_df.groupby(['ticker','merged_name', 'adj_last_date', 'cattype', 'kpi'])['values'].sum()
     ticker_df = ticker_df.reset_index()
 
 
-
     #getting the proportion by dividing the totals of entire market by sum of specific industries with the same adj_last_date
     ticker_df['proportion'] = ticker_df['values'] / ticker_df.groupby(['adj_last_date'])['values'].transform('sum')
-    ticker_df['rank'] = ticker_df.groupby(['adj_last_date'])['values'].transform('rank')
+    ticker_df['reversed_rank'] = ticker_df.groupby(['adj_last_date'])['values'].transform('rank')
     #reverse the rank to get it to make sense - there is no way to do that in the previous
-    ticker_df['rank'] = ticker_df['rank'].max() - ticker_df['rank']
+    ticker_df['rank_max'] = ticker_df['reversed_rank'].max().astype(int)
+    ticker_df['rank'] = ticker_df['rank_max'] - ticker_df['reversed_rank'].astype(int) + 1
+    ticker_df['rank_frac'] = ticker_df['rank'].astype(str) + ' / ' + ticker_df['rank_max'].astype(str)
 
 
+    ticker_df.to_csv('ticker_df.csv', index=False)
+    ticker_df = pd.read_csv('ticker_df.csv')
 
-    ticker_df = ticker_df[['ticker','merged_name','adj_last_date','values','proportion','rank']]
+
+    #select the ticker only after the kpi has been ranked
+    ticker_df = ticker_df[(ticker_df['merged_name'].isin(selected_tics))]
+
+
+    ticker_df = ticker_df[['ticker','merged_name','adj_last_date','values','proportion','rank','rank_frac']]
     # converting the dates to datetime so it can be filtered
     ticker_df["adj_last_date"] = pd.to_datetime(ticker_df["adj_last_date"]).dt.date
 
@@ -177,38 +180,14 @@ def Equity_Explore_Market_Size():
 
 
 
-    ind_grp_maxmin = ticker_df.groupby(['ticker','merged_name'])['adj_last_date'].agg(['max','min'])
 
-
-    #attaching the new rank that is dependant on the performance of the indicator at the start vs the end of dates
-    #merge on ticker + max to get end rank
-    merge_min_max_df = pd.merge(ind_grp_maxmin, ticker_df,  how='left', left_on=['ticker','max'], right_on = ['ticker','adj_last_date'])
-    merge_min_max_df.rename(columns = {'rank':'endrank'}, inplace = True)
-    merge_min_max_df = merge_min_max_df[['ticker','max','min','endrank']]
-
-    #merge on ticker + min to get start rank
-    merge_min_max_df = pd.merge(merge_min_max_df, ticker_df,  how='left', left_on=['ticker','min'], right_on = ['ticker','adj_last_date'])
-    merge_min_max_df.rename(columns = {'rank':'startrank'}, inplace = True)
-    merge_min_max_df = merge_min_max_df[['ticker','merged_name','max','min','startrank','endrank']]
-
-
-    merge_min_max_df['difference'] = merge_min_max_df['startrank'] - merge_min_max_df['endrank']
-    merge_min_max_df['rankgrowth'] = merge_min_max_df['difference'].rank(ascending = False)
-    merge_min_max_df = merge_min_max_df.sort_values(by=['rankgrowth'])
-
-
-    # ticker_df.to_csv('test1.csv', index=False)
-    # merge_min_max_df.to_csv('test.csv', index=False)
-
-    # ticker_df = pd.read_csv('test1.csv')
-    # merge_min_max_df = pd.read_csv('test.csv')
 
     fig = go.Figure()
 
     count = 1
-    for i in merge_min_max_df['ticker']:
-
+    for i in ticker_df['ticker']:
         df = ticker_df[ticker_df['ticker'] == i ].copy()
+        merged_name = df['merged_name'].values[0]
 
         df['required'] = (df['proportion'].apply(lambda x: round(x*100, 2)).astype("string") + '%')
         df['required'] = df['required'].apply(lambda x: 'Proportion: ' + x)
@@ -216,33 +195,18 @@ def Equity_Explore_Market_Size():
         df['required1'] = df['values'].apply(convert_digits)
         df['required1'] = df['required1'].apply(lambda x: 'Value: ' + str(x))
 
-        df['required2'] = df['rank'].apply(lambda x: 'Rank: ' + str(x))
+        df['required2'] = df['rank_frac'].apply(lambda x: 'Rank vs Competitors: ' + str(x))
 
         df['Consolidated'] = df['required'] + "<br>" + df['required1'] + "<br>" + df['required2']
 
         dates = df['adj_last_date']
-        rank = df['rank']
         #replace the below with consolidated and uncomment the top part to display values and proportion
         consolidate = df['Consolidated']
 
-        if selected_view == "Absolute value":
-            view = df['values']
-
-            val_max_extra = ticker_df['values'].max() * 120/100
-            val_min_extra = ticker_df['values'].min() - (val_max_extra * 20/100)
-
-            viewrange = [val_min_extra, val_max_extra]
-
-        else:
-            view = df['rank']
-
-            rank_min = ticker_df['rank'].min()
-            rank_max = ticker_df['rank'].max()
-            #rank range is reversed because a smaller number indicates higher rank
-            viewrange = [rank_max+10, rank_min-10]
-
-
-
+        view = df['values']
+        val_max_extra = ticker_df['values'].max() * 120/100
+        val_min_extra = ticker_df['values'].min() - (val_max_extra * 20/100)
+        viewrange = [val_min_extra, val_max_extra]
         dates = df['adj_last_date']
         
 
@@ -252,7 +216,20 @@ def Equity_Explore_Market_Size():
                             mode='lines+markers',
                             name=i,
                             hovertext=consolidate,
+                            hoverlabel = dict(bordercolor = colors[(count-1)%len(colors)])
                             ))
+
+        fig.add_annotation(
+            x=dates.iloc[-1],
+            y=view.iloc[-1],
+            text='<b>'+merged_name+'<b>',
+            showarrow=True,
+            ax = 20,
+            ay = -20,
+            font_color = colors[(count-1)%len(colors)],
+            textangle = 360, # adjust text angle here
+            font_size = 16 # adjust font size here
+        )
 
         count = count + 1
 
@@ -267,7 +244,7 @@ def Equity_Explore_Market_Size():
 
     fig.update_layout(height=800, width=600,
 
-                    showlegend=True, 
+                    showlegend=False, 
                     # title_text="Performance of industry " + str(selected_kpi),
                     legend=dict(
                         orientation='h',
@@ -278,9 +255,44 @@ def Equity_Explore_Market_Size():
                         )
                     )
 
+    fig.update_layout(hoverlabel = dict(font=dict(color='black'),bgcolor = 'white'),width = 1200)
 
     st.plotly_chart(fig, use_container_width=True)
 
+
+
+
+
+
+
+########## grouping the dates to compare growth in the ranking of the company #############
+########## Good to have but hard to implement - > focus on other improvements first #######
+
+    # # getting the earliest and latest date
+    # ind_grp_maxmin = ticker_df.groupby(['ticker','merged_name'])['adj_last_date'].agg(['max','min'])
+
+
+    # #attaching the new rank that is dependant on the performance of the indicator at the start vs the end of dates
+    # #merge on ticker + max to get end rank
+    # merge_min_max_df = pd.merge(ind_grp_maxmin, ticker_df,  how='left', left_on=['ticker','max'], right_on = ['ticker','adj_last_date'])
+    # merge_min_max_df.rename(columns = {'rank':'endrank'}, inplace = True)
+    # merge_min_max_df = merge_min_max_df[['ticker','max','min','endrank']]
+
+    # #merge on ticker + min to get start rank
+    # merge_min_max_df = pd.merge(merge_min_max_df, ticker_df,  how='left', left_on=['ticker','min'], right_on = ['ticker','adj_last_date'])
+    # merge_min_max_df.rename(columns = {'rank':'startrank'}, inplace = True)
+    # merge_min_max_df = merge_min_max_df[['ticker','merged_name','max','min','startrank','endrank']]
+
+
+    # merge_min_max_df['difference'] = merge_min_max_df['startrank'] - merge_min_max_df['endrank']
+    # merge_min_max_df['rankgrowth'] = merge_min_max_df['difference'].rank(ascending = False)
+    # merge_min_max_df = merge_min_max_df.sort_values(by=['rankgrowth'])
+
+    # merge_min_max_df = ticker_df
+
+
+    # ticker_df.to_csv('test1.csv', index=False)
+    # merge_min_max_df.to_csv('test.csv', index=False)
 
 
 

@@ -92,9 +92,20 @@ def test():
 
     print ('test')
 
+    df = pd.read_pickle('data/eq_hist_details.pickle')
 
 
 
+    dfbl = df[df['cattype'] == 'annual_profit&loss']
+    dfbl = dfbl['kpi'].unique()
+
+    for i in dfbl:
+        print (i)
+
+
+    # print (dfbl['kpi'].unique())
+
+    
 
 
 

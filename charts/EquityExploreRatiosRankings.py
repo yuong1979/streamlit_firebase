@@ -78,7 +78,7 @@ def Equity_Explore_Ratios_Rankings():
     else:
 
         sel_tick = st.session_state['tick_type']
-        print (sel_tick)
+        # print (sel_tick)
 
         # print (merged_ticker_list, 'merged list')
 
@@ -108,7 +108,7 @@ def Equity_Explore_Ratios_Rankings():
 
     #recording the selected industry from sessions
     st.session_state['tick_type'] = selected_choice
-    print(selected_choice)
+    # print(selected_choice)
 
     # if len(selected_kpi) >= 15:
     #     st.error('User may only choose a maximum of 14 ratios')

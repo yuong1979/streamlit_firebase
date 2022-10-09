@@ -16,7 +16,7 @@ import pytz
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import itertools
-
+colors = px.colors.qualitative.Plotly
 
 # #################################################################################################
 # ####### Tree chart ratios of industries ###############################################
@@ -113,12 +113,16 @@ def Industry_Explore_Market_Size():
 
     #getting the proportion by dividing the totals of entire market by sum of specific industries with the same adj_last_date
     by_ind_df['proportion'] = by_ind_df['values'] / by_ind_df.groupby(['adj_last_date'])['values'].transform('sum')
-    by_ind_df['rank'] = by_ind_df.groupby(['adj_last_date'])['values'].transform('rank')
+    by_ind_df['reversed_rank'] = by_ind_df.groupby(['adj_last_date'])['values'].transform('rank')
     #reverse the rank to get it to make sense - there is no way to do that in the previous
-    by_ind_df['rank'] = by_ind_df['rank'].max() - by_ind_df['rank']
+    by_ind_df['rank_max'] = by_ind_df['reversed_rank'].max().astype(int)
+    by_ind_df['rank'] = by_ind_df['rank_max'] - by_ind_df['reversed_rank'].astype(int) + 1
+    by_ind_df['rank_frac'] = by_ind_df['rank'].astype(str) + ' / ' + by_ind_df['rank_max'].astype(str)
 
 
-    by_ind_df = by_ind_df[['industry','adj_last_date','values','proportion','rank']]
+
+
+    by_ind_df = by_ind_df[['industry','adj_last_date','values','proportion','rank','rank_frac']]
     # converting the dates to datetime so it can be filtered
     by_ind_df["adj_last_date"] = pd.to_datetime(by_ind_df["adj_last_date"]).dt.date
 
@@ -146,27 +150,7 @@ def Industry_Explore_Market_Size():
 
 
     by_ind_df = by_ind_df[by_ind_df['industry'].isin(selected_ind)]
-    # print (by_ind_df)
-    ind_grp_maxmin = by_ind_df.groupby(['industry'])['adj_last_date'].agg(['max','min'])
 
-
-
-    #attaching the new rank that is dependant on the performance of the indicator at the start vs the end of dates
-    #merge on industry + max to get end rank
-    merge_min_max_df = pd.merge(ind_grp_maxmin, by_ind_df,  how='left', left_on=['industry','max'], right_on = ['industry','adj_last_date'])
-    merge_min_max_df.rename(columns = {'rank':'endrank'}, inplace = True)
-    merge_min_max_df = merge_min_max_df[['industry','max','min','endrank']]
-
-    #merge on industry + min to get start rank
-    merge_min_max_df = pd.merge(merge_min_max_df, by_ind_df,  how='left', left_on=['industry','min'], right_on = ['industry','adj_last_date'])
-    merge_min_max_df.rename(columns = {'rank':'startrank'}, inplace = True)
-    merge_min_max_df = merge_min_max_df[['industry','max','min','startrank','endrank']]
-
-    merge_min_max_df['difference'] = merge_min_max_df['startrank'] - merge_min_max_df['endrank']
-    merge_min_max_df['rankgrowth'] = merge_min_max_df['difference'].rank(ascending = False)
-    merge_min_max_df = merge_min_max_df.sort_values(by=['rankgrowth'])
-
-    # print (merge_min_max_df)
 
     # by_ind_df.to_csv('by_ind_df.csv', index=False)
     # merge_min_max_df.to_csv('merge_min_max_df.csv', index=False)
@@ -183,7 +167,7 @@ def Industry_Explore_Market_Size():
     fig = go.Figure()
 
     count = 1
-    for i in merge_min_max_df['industry']:
+    for i in by_ind_df['industry']:
 
         df = by_ind_df[by_ind_df['industry'] == i ].copy()
 
@@ -193,7 +177,7 @@ def Industry_Explore_Market_Size():
         df['required1'] = df['values'].apply(convert_digits)
         df['required1'] = df['required1'].apply(lambda x: 'Value: ' + str(x))
 
-        df['required2'] = df['rank'].apply(lambda x: 'Rank: ' + str(x))
+        df['required2'] = df['rank_frac'].apply(lambda x: 'Rank vs other Industry: ' + str(x))
 
         df['Consolidated'] = df['required'] + "<br>" + df['required1'] + "<br>" + df['required2']
 
@@ -204,14 +188,31 @@ def Industry_Explore_Market_Size():
 
         dates = df['adj_last_date']
         rank = df['rank']
+        view = df['values']
+        val_max_extra = by_ind_df['values'].max() * 120/100
+        val_min_extra = by_ind_df['values'].min() - (val_max_extra * 20/100)
+        viewrange = [val_min_extra, val_max_extra]
 
         fig.add_trace(go.Scatter(
                             x=dates, 
-                            y=rank,
+                            y=view,
                             mode='lines+markers',
                             name=i,
                             hovertext=consolidate,
+                            hoverlabel = dict(bordercolor = colors[(count-1)%len(colors)])
                             ))
+
+        fig.add_annotation(
+            x=dates.iloc[-1],
+            y=view.iloc[-1],
+            text='<b>'+i+'<b>',
+            showarrow=True,
+            ax = 20,
+            ay = -20,
+            font_color = colors[(count-1)%len(colors)],
+            textangle = 360, # adjust text angle here
+            font_size = 16 # adjust font size here
+        )
 
         count = count + 1
 
@@ -222,13 +223,11 @@ def Industry_Explore_Market_Size():
 
     #with margin
     fig.update_xaxes(range = [date_min-pd.Timedelta(60, 'd'), date_max+pd.Timedelta(60, "d")])
-    fig.update_yaxes(
-        range = [rank_max+10, rank_min-10],
-        )
+    fig.update_yaxes(range = viewrange,)
 
     fig.update_layout(height=800, width=600,
 
-                    showlegend=True, 
+                    showlegend=False, 
                     # title_text="Performance of industry " + str(selected_kpi),
                     legend=dict(
                         orientation='h',
@@ -238,11 +237,36 @@ def Industry_Explore_Market_Size():
                         x=0
                         )
                     )
-
+    fig.update_layout(hoverlabel = dict(font=dict(color='black'),bgcolor = 'white'),width = 1200)
 
     st.plotly_chart(fig, use_container_width=True)
 
 
+
+
+########## grouping the dates to compare growth in the ranking of the company #############
+########## Good to have but hard to implement - > focus on other improvements first #######
+
+
+    # # print (by_ind_df)
+    # ind_grp_maxmin = by_ind_df.groupby(['industry'])['adj_last_date'].agg(['max','min'])
+
+
+
+    # #attaching the new rank that is dependant on the performance of the indicator at the start vs the end of dates
+    # #merge on industry + max to get end rank
+    # merge_min_max_df = pd.merge(ind_grp_maxmin, by_ind_df,  how='left', left_on=['industry','max'], right_on = ['industry','adj_last_date'])
+    # merge_min_max_df.rename(columns = {'rank':'endrank'}, inplace = True)
+    # merge_min_max_df = merge_min_max_df[['industry','max','min','endrank']]
+
+    # #merge on industry + min to get start rank
+    # merge_min_max_df = pd.merge(merge_min_max_df, by_ind_df,  how='left', left_on=['industry','min'], right_on = ['industry','adj_last_date'])
+    # merge_min_max_df.rename(columns = {'rank':'startrank'}, inplace = True)
+    # merge_min_max_df = merge_min_max_df[['industry','max','min','startrank','endrank']]
+
+    # merge_min_max_df['difference'] = merge_min_max_df['startrank'] - merge_min_max_df['endrank']
+    # merge_min_max_df['rankgrowth'] = merge_min_max_df['difference'].rank(ascending = False)
+    # merge_min_max_df = merge_min_max_df.sort_values(by=['rankgrowth'])
 
 
 
