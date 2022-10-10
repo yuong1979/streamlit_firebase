@@ -18,6 +18,13 @@ from plotly.subplots import make_subplots
 import itertools
 colors = px.colors.qualitative.Plotly
 
+
+
+def handle_select_kpi():
+    st.session_state.kpi_type = st.session_state.kpi_EquityExploreMarketSize
+    # print (st.session_state.kpi_type)
+
+
 # #################################################################################################
 # ####### Tree chart ratios of industries ###############################################
 # #################################################################################################
@@ -44,51 +51,140 @@ def Equity_Explore_Market_Size():
         kpi_list = ['Total Cashflows From Investing Activities', 'Change To Netincome', 'Total Cash From Operating Activities', 'Net Income', 'Change In Cash', 'Total Cash From Financing Activities']
 
 
-    # # To include shortnames
-    # ticker_df['merged_name'] = ticker_df.index.astype(str) + " / " + ticker_df['shortName'].astype(str)
-
-    # #Selecting the ticker so it starts from the biggest in market cap down to the lowest, also selected all neccessary columns only so speed is increased
-    # ticker_df = ticker_df.filter(['marketCapUSD', 'merged_name', 'industry'])
-    # #replace with none all those data that are empty
-    # ticker_df['marketCapUSD'] = ticker_df['marketCapUSD'].apply(lambda x: None if x == "" else x)
-    # ticker_df = ticker_df.sort_values(by='marketCapUSD', ascending=False)
-    # merged_ticker_list = ticker_df['merged_name'].tolist()
-
 
     #import industry to map to hist details
     df_daily_kpi = pd.read_pickle('data/eq_daily_kpi.pickle')
 
-    # print (df_daily_kpi.columns.tolist())
 
 
     ind_list = df_daily_kpi['industry'].unique().tolist()
-
     selected_ind = st.selectbox(
         'Select an industry',
         tuple(ind_list),
     )
 
 
-    ticker_df = df_daily_kpi.sort_values(by='marketCapUSD', ascending=False)
-    ticker_df['merged_name'] = ticker_df.index.astype(str) + " / " + ticker_df['shortName'].astype(str)
-
-    # print (ticker_df)
-
-    ticker_list = ticker_df[ticker_df['industry'] == selected_ind]['merged_name'].tolist()
-    default_ticker_list = ticker_list[:6]
+    # df_daily_kpi = df_daily_kpi.sort_values(by='marketCapUSD', ascending=False)
+    df_daily_kpi['merged_name'] = df_daily_kpi.index.astype(str) + " / " + df_daily_kpi['shortName'].astype(str)
 
 
-    selected_tics = st.multiselect(
-        "Select an equity:",
-        options = ticker_list,
-        default = default_ticker_list
-    )
+    #retrieving the selected kpi from sessions to insert into sort ticker sequence
+    if 'kpi_type' in st.session_state:
+        sel_kpi = st.session_state['kpi_type']
+    else:
+        sel_kpi = "Total Revenue"
+
+
+
+    df_merged = pd.merge(df, df_daily_kpi, how='left', left_on = 'ticker', right_index = True)
+
+    #select the neccessary indicators
+    all_df = df_merged[(df_merged['kpi'] == sel_kpi) & (df_merged['cattype'] == selected_cat) & (df_merged['industry'] == selected_ind)]
+    ticker_df = all_df.groupby(['ticker','merged_name', 'marketCapUSD','industry', 'adj_last_date', 'cattype', 'kpi'])['values'].sum()
+    ticker_df = ticker_df.reset_index()
+
+
+
+    sort_list = ['Market Cap', 'kpi performance']
+    selected_sort = st.radio("Sort by", sort_list, horizontal=True)
+
+    if selected_sort == 'Market Cap':
+        #Retrieve market cap for ticker selection
+        ticker_sort = ticker_df.groupby(['ticker','merged_name', 'marketCapUSD'])['industry'].count().reset_index()
+        ticker_sort = ticker_sort.sort_values(by=['marketCapUSD'], ascending=False)
+        ticker_list = ticker_sort['merged_name'].to_list()
+    elif selected_sort == 'kpi performance':
+
+        #Retrieve rank by growth for ticker selection
+        df_max = ticker_df.groupby(['ticker','merged_name'])['adj_last_date'].agg(['max'])
+        df_min = ticker_df.groupby(['ticker','merged_name'])['adj_last_date'].agg(['min'])
+
+        #attaching the new rank that is dependant on the performance of the indicator at the start vs the end of dates
+        #merge on ticker + max to get end rank
+        df_max_rank = pd.merge(df_max, ticker_df,  how='left', left_on=['ticker','max'], right_on = ['ticker','adj_last_date'])
+        df_max_rank['endrank'] = df_max_rank['values'].rank(ascending=False)
+        df_max_rank = df_max_rank[['ticker','merged_name','max','adj_last_date','values','endrank']]
+        # print (df_max_rank)
+        df_min_rank = pd.merge(df_min, ticker_df,  how='left', left_on=['ticker','min'], right_on = ['ticker','adj_last_date'])
+        df_min_rank['startrank'] = df_min_rank['values'].rank(ascending=False)
+        df_min_rank = df_min_rank[['ticker','merged_name','min','adj_last_date','values','startrank']]
+        # print (df_min_rank)
+        # getting the growth rank by comparing the startrank and endrank
+        merge_min_max_df = pd.merge(df_max_rank, df_min_rank,  how='left', left_on=['ticker','merged_name'], right_on = ['ticker','merged_name'])
+        merge_min_max_df = merge_min_max_df[['ticker','merged_name','startrank','endrank']]
+        merge_min_max_df['grow_rank'] = merge_min_max_df['startrank'] - merge_min_max_df['endrank']
+        merge_min_max_df = merge_min_max_df.sort_values(by=['grow_rank'], ascending=False)
+        ticker_list = merge_min_max_df['merged_name'].tolist()
+
 
 
     selected_kpi = st.selectbox(
         'Select a kpi',
         tuple(kpi_list),
+        key = "kpi_EquityExploreMarketSize",
+        on_change = handle_select_kpi
+
     )
+
+    # #change this to the new ticker list which is what is sorted based on growth or just use the market value
+    # ticker_list = ticker_df[ticker_df['industry'] == selected_ind]['merged_name'].unique().tolist()
+
+    default_ticker_list = ticker_list[:4]
+    selected_tics = st.multiselect(
+        "Select an equity:",
+        #ticker_list below needs to be replaced by a sorted ticker list based on the kpi
+        options = ticker_list,
+        default = default_ticker_list
+    )
+
+
+
+
+
+
+
+
+
+
+
+    # ## for testing purposes ###
+    # df = extract_hist_details_qtr_cashflow()
+    # kpi_list = ['Total Cashflows From Investing Activities', 'Change To Netincome', 'Total Cash From Operating Activities', 'Net Income', 'Change In Cash', 'Total Cash From Financing Activities']
+    # selected_cat = "quarterly_cashflow"
+    # selected_ind = [
+    #     'Semiconductors', 'Biotechnology', 'Tobacco', 'Gold', 'Restaurants', 
+    #     'Broadcasting', 'Silver',  'Software—Infrastructure', 'Personal Services', 'Steel', 
+    #     'Airlines', 'Solar', 'Luxury Goods', 'Aluminum', 'Footwear & Accessories', 
+    #     'Lumber & Wood Production', 'Household & Personal Products', 'Apparel Retail', 'Health Information Services',
+    # ]
+    # selected_kpi = 'Net Income'
+
+
+
+
+
+    #getting the proportion by dividing the totals of entire market by sum of specific industries with the same adj_last_date
+    ticker_df['proportion'] = ticker_df['values'] / ticker_df.groupby(['adj_last_date'])['values'].transform('sum')
+    ticker_df['reversed_rank'] = ticker_df.groupby(['adj_last_date'])['values'].transform('rank')
+    #reverse the rank to get it to make sense - there is no way to do that in the previous
+    ticker_df['rank_max'] = ticker_df['reversed_rank'].max().astype(int)
+    ticker_df['rank'] = ticker_df['rank_max'] - ticker_df['reversed_rank'].astype(int) + 1
+    ticker_df['rank_frac'] = ticker_df['rank'].astype(str) + ' / ' + ticker_df['rank_max'].astype(str)
+
+
+    # ticker_df.to_csv('ticker_df.csv', index=False)
+    # ticker_df = pd.read_csv('ticker_df.csv')
+
+
+    #select the ticker only after the kpi has been ranked
+    ticker_df = ticker_df[(ticker_df['merged_name'].isin(selected_tics))]
+
+
+    ticker_df = ticker_df[['ticker','merged_name','adj_last_date','values','proportion','rank','rank_frac']]
+    # converting the dates to datetime so it can be filtered
+    ticker_df["adj_last_date"] = pd.to_datetime(ticker_df["adj_last_date"]).dt.date
+
+
 
 
 
@@ -105,54 +201,6 @@ def Equity_Explore_Market_Size():
 
     date_one_yr_ago = datenow - timedelta(days = days_ago_quarterly)
     date_one_yr_ago = date_one_yr_ago.date()
-
-
-    # ## for testing purposes ###
-    # df = extract_hist_details_qtr_cashflow()
-    # kpi_list = ['Total Cashflows From Investing Activities', 'Change To Netincome', 'Total Cash From Operating Activities', 'Net Income', 'Change In Cash', 'Total Cash From Financing Activities']
-    # selected_cat = "quarterly_cashflow"
-    # selected_ind = [
-    #     'Semiconductors', 'Biotechnology', 'Tobacco', 'Gold', 'Restaurants', 
-    #     'Broadcasting', 'Silver',  'Software—Infrastructure', 'Personal Services', 'Steel', 
-    #     'Airlines', 'Solar', 'Luxury Goods', 'Aluminum', 'Footwear & Accessories', 
-    #     'Lumber & Wood Production', 'Household & Personal Products', 'Apparel Retail', 'Health Information Services',
-    # ]
-    # selected_kpi = 'Net Income'
-
-
-    # #import industry to map to hist details
-    # df_ind = pd.read_pickle('data/eq_daily_kpi.pickle')
-    # ticker_df = ticker_df['industry','merged_name']
-
-
-    df_merged = pd.merge(df, ticker_df, how='left', left_on = 'ticker', right_index = True)
-
-    #select the neccessary indicators
-    all_df = df_merged[(df_merged['kpi'] == selected_kpi) & (df_merged['cattype'] == selected_cat) & (df_merged['industry'] == selected_ind)]
-    ticker_df = all_df.groupby(['ticker','merged_name', 'adj_last_date', 'cattype', 'kpi'])['values'].sum()
-    ticker_df = ticker_df.reset_index()
-
-
-    #getting the proportion by dividing the totals of entire market by sum of specific industries with the same adj_last_date
-    ticker_df['proportion'] = ticker_df['values'] / ticker_df.groupby(['adj_last_date'])['values'].transform('sum')
-    ticker_df['reversed_rank'] = ticker_df.groupby(['adj_last_date'])['values'].transform('rank')
-    #reverse the rank to get it to make sense - there is no way to do that in the previous
-    ticker_df['rank_max'] = ticker_df['reversed_rank'].max().astype(int)
-    ticker_df['rank'] = ticker_df['rank_max'] - ticker_df['reversed_rank'].astype(int) + 1
-    ticker_df['rank_frac'] = ticker_df['rank'].astype(str) + ' / ' + ticker_df['rank_max'].astype(str)
-
-
-    ticker_df.to_csv('ticker_df.csv', index=False)
-    ticker_df = pd.read_csv('ticker_df.csv')
-
-
-    #select the ticker only after the kpi has been ranked
-    ticker_df = ticker_df[(ticker_df['merged_name'].isin(selected_tics))]
-
-
-    ticker_df = ticker_df[['ticker','merged_name','adj_last_date','values','proportion','rank','rank_frac']]
-    # converting the dates to datetime so it can be filtered
-    ticker_df["adj_last_date"] = pd.to_datetime(ticker_df["adj_last_date"]).dt.date
 
 
     #remove negative numbers if not the proportion does not make sense anymore
